@@ -1,0 +1,12 @@
+{
+  "": {
+    "swift-dependencies": "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/.build/arm64-apple-macosx/debug/HelioCore.build/primary.swiftdeps"
+  },
+  "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/Sources/HelioCore/Placeholder.swift": {
+    "dependencies": "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/.build/arm64-apple-macosx/debug/HelioCore.build/Placeholder.d",
+    "object": "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/.build/arm64-apple-macosx/debug/HelioCore.build/Placeholder.swift.o",
+    "swiftmodule": "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/.build/arm64-apple-macosx/debug/HelioCore.build/Placeholder~partial.swiftmodule",
+    "swift-dependencies": "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/.build/arm64-apple-macosx/debug/HelioCore.build/Placeholder.swiftdeps",
+    "diagnostics": "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/.build/arm64-apple-macosx/debug/HelioCore.build/Placeholder.dia"
+  }
+}
