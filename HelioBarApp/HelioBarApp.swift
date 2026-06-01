@@ -21,7 +21,12 @@ struct HelioBarApp: App {
     }
 
     private var barTitle: String {
-        model.store.liveHR.map(String.init) ?? "–"
+        guard let hr = model.store.liveHR else { return "–" }
+        switch model.store.hrTrend {
+        case .rising:  return "\(hr) ↑"
+        case .falling: return "\(hr) ↓"
+        default:       return "\(hr)"
+        }
     }
 
     private var zoneColor: Color {

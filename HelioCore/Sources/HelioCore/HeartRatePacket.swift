@@ -1,20 +1,37 @@
 import Foundation
 
-/// Parses a BLE Heart Rate Measurement characteristic value (UUID 0x2A37).
-/// Spec: first byte is flags; bit 0 = 0 → 8-bit BPM, bit 0 = 1 → 16-bit LE BPM.
+public struct HeartRateSample: Equatable, Sendable {
+    public let bpm: Int
+    public let rrIntervals: [Double]   // seconds
+    public init(bpm: Int, rrIntervals: [Double]) {
+        self.bpm = bpm; self.rrIntervals = rrIntervals
+    }
+}
+
+/// Parses a BLE Heart Rate Measurement (0x2A37) value.
+/// flags bit0: 16-bit HR; bit3: energy-expended present (skip 2 bytes); bit4: RR intervals present.
 public enum HeartRatePacket {
-    public static func parse(_ data: Data) -> Int? {
-        guard let flags = data.first else { return nil }
-        let base = data.startIndex
-        let is16Bit = (flags & 0x01) != 0
-        if is16Bit {
-            guard data.count >= 3 else { return nil }
-            let lo = UInt16(data[base + 1])
-            let hi = UInt16(data[base + 2])
-            return Int(lo | (hi << 8))
+    public static func parse(_ data: Data) -> HeartRateSample? {
+        let b = [UInt8](data)
+        guard let flags = b.first else { return nil }
+        var i = 1
+        let bpm: Int
+        if flags & 0x01 != 0 {
+            guard b.count >= 3 else { return nil }
+            bpm = Int(b[1]) | (Int(b[2]) << 8); i = 3
         } else {
-            guard data.count >= 2 else { return nil }
-            return Int(data[base + 1])
+            guard b.count >= 2 else { return nil }
+            bpm = Int(b[1]); i = 2
         }
+        if flags & 0x08 != 0 { i += 2 }              // skip energy-expended uint16
+        var rr: [Double] = []
+        if flags & 0x10 != 0 {                       // RR intervals, units of 1/1024 s
+            while i + 2 <= b.count {
+                let raw = Int(b[i]) | (Int(b[i+1]) << 8)
+                rr.append(Double(raw) / 1024.0)
+                i += 2
+            }
+        }
+        return HeartRateSample(bpm: bpm, rrIntervals: rr)
     }
 }

@@ -1,3 +1,4 @@
+import Foundation
 import CoreBluetooth
 import HelioCore
 
@@ -85,7 +86,9 @@ final class HeartRateMonitor: NSObject, CBCentralManagerDelegate, CBPeripheralDe
                     didUpdateValueFor characteristic: CBCharacteristic,
                     error: Error?) {
         guard let data = characteristic.value,
-              let bpm = HeartRatePacket.parse(data) else { return }
-        onBPM(bpm)
+              let sample = HeartRatePacket.parse(data) else { return }
+        let hex = data.map { String(format: "%02x", $0) }.joined()
+        NSLog("HELIO_HR raw=%@ bpm=%d rrCount=%d", hex, sample.bpm, sample.rrIntervals.count)
+        onBPM(sample.bpm)
     }
 }
