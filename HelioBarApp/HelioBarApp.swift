@@ -12,8 +12,7 @@ struct HelioBarApp: App {
             }
             .task { model.start() }
         } label: {
-            Label(barTitle, systemImage: "heart.fill")
-                .foregroundStyle(zoneColor)
+            Text(barTitle).foregroundStyle(zoneColor)
         }
         .menuBarExtraStyle(.window)
 
@@ -24,7 +23,9 @@ struct HelioBarApp: App {
     }
 
     private var barTitle: String {
-        model.store.liveHR.map { "\($0)" } ?? "–"
+        let hr = model.store.liveHR.map(String.init) ?? "–"
+        if let e = model.store.energy { return "\(hr) ⚡\(e)" }
+        return hr
     }
 
     private var zoneColor: Color {

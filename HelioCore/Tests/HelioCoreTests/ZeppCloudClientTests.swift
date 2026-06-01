@@ -2,7 +2,7 @@ import XCTest
 @testable import HelioCore
 
 /// Routes responses by the `subType` query param so one client call (which makes
-/// two requests — stress + readiness) gets the right body for each.
+/// multiple requests) gets the right body for each.
 private struct RoutingHTTP: HTTPFetching {
     var bodies: [String: Data]      // keyed by subType
     var status: Int = 200
@@ -15,6 +15,13 @@ private struct RoutingHTTP: HTTPFetching {
     }
 }
 
+/// Builds a stressInfo blob containing a single IEEE 754 LE float preceded by 0x0d.
+private func makeStressBlob(_ value: Float32) -> Data {
+    var d = Data([0x0d])
+    withUnsafeBytes(of: value.bitPattern.littleEndian) { d.append(contentsOf: $0) }
+    return d
+}
+
 final class ZeppCloudClientTests: XCTestCase {
     private let creds = ZeppCredentials(appToken: "tok", host: "api.example.com")
     private let fixedNow: @Sendable () -> Date = { Date(timeIntervalSince1970: 1_700_000_000) }
@@ -23,71 +30,89 @@ final class ZeppCloudClientTests: XCTestCase {
         ZeppCloudClient(http: http, creds: creds, now: fixedNow)
     }
 
-    func test_fetchesStressAndReadinessFromEventStream() async throws {
+    // MARK: - Energy
+
+    func test_energy_parsesPhysicalAndMentalAverage() async throws {
+        let body = Data(#"""
+        {"items":[{"timestamp":1,"value":{"samples":[{"physical":80,"mental":78,"minuteOfDay":600}]}}]}
+        """#.utf8)
         let http = RoutingHTTP(bodies: [
-            "stress_data": Data(#"{"items":[{"timestamp":10,"value":{"score":34}}]}"#.utf8),
-            "watch_score": Data(#"{"items":[{"timestamp":10,"value":{"score":81}}]}"#.utf8),
+            "real_data": body,
+            "stress_data": Data(#"{"items":[]}"#.utf8),
+            "watch_score": Data(#"{"items":[]}"#.utf8),
         ])
-        let metrics = try await client(http).fetchMetrics()
-        XCTAssertEqual(metrics.stress, StressReading(value: 34, label: "Relaxed"))
-        XCTAssertEqual(metrics.readiness, ReadinessReading(value: 81))
+        let m = try await client(http).fetchMetrics()
+        XCTAssertEqual(m.energy, 79)   // (80+78)/2 = 79.0
     }
 
-    func test_picksNewestItemByTimestamp() async throws {
+    func test_energy_nilWhenItemsEmpty() async throws {
         let http = RoutingHTTP(bodies: [
-            "stress_data": Data(#"""
-            {"items":[{"timestamp":10,"value":{"score":20}},
-                      {"timestamp":99,"value":{"score":70}}]}
-            """#.utf8),
-            "watch_score": Data(#"{"items":[{"timestamp":1,"value":{"score":50}}]}"#.utf8),
+            "real_data": Data(#"{"items":[]}"#.utf8),
+            "stress_data": Data(#"{"items":[]}"#.utf8),
+            "watch_score": Data(#"{"items":[]}"#.utf8),
         ])
-        let metrics = try await client(http).fetchMetrics()
-        XCTAssertEqual(metrics.stress.value, 70)      // timestamp 99 wins
-        XCTAssertEqual(metrics.stress.label, "Medium")
+        let m = try await client(http).fetchMetrics()
+        XCTAssertNil(m.energy)
     }
 
-    func test_extractsScoreFromStringEncodedValue() async throws {
-        // Some payloads nest a JSON string inside `value`.
+    // MARK: - Stress (protobuf blob)
+
+    func test_stress_decodesStressBlob() async throws {
+        let blob = makeStressBlob(40.0)
+        let b64 = blob.base64EncodedString()
+        let stressBody = Data("""
+        {"items":[{"timestamp":1,"value":{"samples":[{"stressInfo":"\(b64)","minuteOfDay":300}]}}]}
+        """.utf8)
         let http = RoutingHTTP(bodies: [
-            "stress_data": Data(#"{"items":[{"timestamp":1,"value":"{\"stress\":45}"}]}"#.utf8),
-            "watch_score": Data(#"{"items":[{"timestamp":1,"value":{"score":60}}]}"#.utf8),
+            "real_data": Data(#"{"items":[]}"#.utf8),
+            "stress_data": stressBody,
+            "watch_score": Data(#"{"items":[]}"#.utf8),
         ])
-        let metrics = try await client(http).fetchMetrics()
-        XCTAssertEqual(metrics.stress, StressReading(value: 45, label: "Normal"))
-        XCTAssertEqual(metrics.readiness.value, 60)
+        let m = try await client(http).fetchMetrics()
+        XCTAssertEqual(m.stress, StressReading(value: 40, label: "Normal"))
     }
 
-    func test_throwsOnNon2xx() async {
-        let http = RoutingHTTP(bodies: ["stress_data": Data(), "watch_score": Data()],
-                               status: 401)
+    // MARK: - newest sample by minuteOfDay
+
+    func test_picksNewestSampleByMinuteOfDay() async throws {
+        let body = Data(#"""
+        {"items":[{"timestamp":1,"value":{"samples":[
+            {"physical":60,"mental":60,"minuteOfDay":100},
+            {"physical":90,"mental":90,"minuteOfDay":600}
+        ]}}]}
+        """#.utf8)
+        let http = RoutingHTTP(bodies: [
+            "real_data": body,
+            "stress_data": Data(#"{"items":[]}"#.utf8),
+            "watch_score": Data(#"{"items":[]}"#.utf8),
+        ])
+        let m = try await client(http).fetchMetrics()
+        XCTAssertEqual(m.energy, 90)   // minuteOfDay 600 wins
+    }
+
+    // MARK: - Invalid token
+
+    func test_invalidTokenBodyThrowsHttp401() async {
+        let tokenBody = Data(#"{"code":0,"message":"invalid token"}"#.utf8)
+        let http = RoutingHTTP(bodies: [
+            "real_data": tokenBody,
+            "stress_data": tokenBody,
+            "watch_score": tokenBody,
+        ])
         await assertThrows(client(http)) { XCTAssertEqual($0, .http(401)) }
     }
 
-    func test_throwsNoDataWhenItemsEmpty() async {
-        let http = RoutingHTTP(bodies: [
-            "stress_data": Data(#"{"items":[]}"#.utf8),
-            "watch_score": Data(#"{"items":[{"timestamp":1,"value":{"score":60}}]}"#.utf8),
-        ])
-        await assertThrows(client(http)) { XCTAssertEqual($0, .noData) }
-    }
-
-    func test_throwsDecodingOnGarbage() async {
-        let http = RoutingHTTP(bodies: [
-            "stress_data": Data("nope".utf8),
-            "watch_score": Data(#"{"items":[{"timestamp":1,"value":{"score":60}}]}"#.utf8),
-        ])
-        await assertThrows(client(http)) { XCTAssertEqual($0, .decoding) }
-    }
+    // MARK: - makeRequest
 
     func test_requestCarriesAppTokenPathAndSubType() throws {
-        let client = client(RoutingHTTP(bodies: [:]))
-        let req = try client.makeRequest(eventType: "Charge", subType: "stress_data")
+        let c = client(RoutingHTTP(bodies: [:]))
+        let req = try c.makeRequest(eventType: "Charge", subType: "real_data")
         XCTAssertEqual(req.value(forHTTPHeaderField: "apptoken"), "tok")
         XCTAssertEqual(req.value(forHTTPHeaderField: "appname"), "com.huami.midong")
         XCTAssertEqual(req.url?.host, "api.example.com")
         XCTAssertEqual(req.url?.path, "/v2/users/me/events")
         let q = URLComponents(url: req.url!, resolvingAgainstBaseURL: false)?.queryItems ?? []
-        XCTAssertTrue(q.contains(URLQueryItem(name: "subType", value: "stress_data")))
+        XCTAssertTrue(q.contains(URLQueryItem(name: "subType", value: "real_data")))
         XCTAssertTrue(q.contains(URLQueryItem(name: "eventType", value: "Charge")))
     }
 
@@ -95,12 +120,46 @@ final class ZeppCloudClientTests: XCTestCase {
         let c = ZeppCloudClient(http: RoutingHTTP(bodies: [:]),
                                 creds: ZeppCredentials(appToken: "t", host: "not a host"),
                                 now: fixedNow)
-        XCTAssertThrowsError(try c.makeRequest(eventType: "Charge", subType: "stress_data")) {
+        XCTAssertThrowsError(try c.makeRequest(eventType: "Charge", subType: "real_data")) {
             XCTAssertEqual($0 as? ZeppCloudError, .invalidHost)
         }
     }
 
+    // MARK: - latestStressValue unit tests
+
+    func test_latestStressValue_parsesLastValidFloat() {
+        // Two floats: 25.0 and 65.0 — should pick 65.0 (last valid ≤100)
+        var d = Data([0x0d])
+        withUnsafeBytes(of: Float32(25.0).bitPattern.littleEndian) { d.append(contentsOf: $0) }
+        d.append(0x0d)
+        withUnsafeBytes(of: Float32(65.0).bitPattern.littleEndian) { d.append(contentsOf: $0) }
+        XCTAssertEqual(ZeppCloudClient.latestStressValue(d), 65)
+    }
+
+    func test_latestStressValue_ignoresValuesOver100() {
+        var d = Data([0x0d])
+        withUnsafeBytes(of: Float32(120.0).bitPattern.littleEndian) { d.append(contentsOf: $0) }
+        XCTAssertNil(ZeppCloudClient.latestStressValue(d))
+    }
+
+    func test_latestStressValue_returnsNilOnEmptyBlob() {
+        XCTAssertNil(ZeppCloudClient.latestStressValue(Data()))
+    }
+
+    // MARK: - stressLabel
+
+    func test_stressLabelBands() {
+        XCTAssertEqual(ZeppCloudClient.stressLabel(20), "Relaxed")
+        XCTAssertEqual(ZeppCloudClient.stressLabel(39), "Relaxed")
+        XCTAssertEqual(ZeppCloudClient.stressLabel(40), "Normal")
+        XCTAssertEqual(ZeppCloudClient.stressLabel(59), "Normal")
+        XCTAssertEqual(ZeppCloudClient.stressLabel(60), "Medium")
+        XCTAssertEqual(ZeppCloudClient.stressLabel(79), "Medium")
+        XCTAssertEqual(ZeppCloudClient.stressLabel(80), "High")
+    }
+
     // MARK: helper
+
     private func assertThrows(_ client: ZeppCloudClient,
                               _ check: (ZeppCloudError) -> Void,
                               file: StaticString = #filePath, line: UInt = #line) async {

@@ -46,6 +46,7 @@ struct MenuContentView: View {
                     .font(.caption)
             }.buttonStyle(.plain)
         } else {
+            metricRow("Energy", store.energy.map { "\($0)%" })
             metricRow("Stress", store.stress.map { "\($0.value)  (\($0.label))" })
             metricRow("Readiness", store.readiness.map { "\($0.value)" })
         }
@@ -79,7 +80,9 @@ struct MenuContentView: View {
     let s = HealthStore()
     s.updateHR(72)
     s.updateCloud(stress: .init(value: 34, label: "Relaxed"),
-                  readiness: .init(value: 81), at: Date())
+                  readiness: .init(value: 81),
+                  energy: 72,
+                  at: Date())
     return MenuContentView(store: s, onSettings: {})
 }
 

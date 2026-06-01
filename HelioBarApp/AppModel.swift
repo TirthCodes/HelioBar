@@ -37,24 +37,23 @@ final class AppModel {
 
     func startCloudPolling() {
         pollTask?.cancel()
-        guard let creds = tokenStore.load() else {
-            store.cloudFailed("No Zepp token")
-            return
-        }
-        let client = ZeppCloudClient(http: URLSession.shared, creds: creds)
         let interval = settings.refreshSeconds
         pollTask = Task { [weak self] in
             while !Task.isCancelled {
-                await self?.pollOnce(client)
+                await self?.pollOnce()
                 try? await Task.sleep(for: .seconds(interval))
             }
         }
     }
 
-    private func pollOnce(_ client: ZeppCloudClient) async {
+    private func pollOnce() async {
+        guard let creds = ZeppTokenReader.current() ?? tokenStore.load() else {
+            store.cloudFailed("No Zepp token (open the Zepp app)"); return
+        }
+        let client = ZeppCloudClient(http: URLSession.shared, creds: creds)
         do {
             let m = try await client.fetchMetrics()
-            store.updateCloud(stress: m.stress, readiness: m.readiness, at: Date())
+            store.updateCloud(stress: m.stress, readiness: m.readiness, energy: m.energy, at: Date())
         } catch {
             store.cloudFailed("\(error)")
         }

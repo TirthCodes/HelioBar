@@ -31,10 +31,22 @@ final class HealthStoreTests: XCTestCase {
         let when = Date(timeIntervalSince1970: 1_000)
         store.updateCloud(stress: StressReading(value: 34, label: "Relaxed"),
                           readiness: ReadinessReading(value: 81),
+                          energy: 72,
                           at: when)
         XCTAssertEqual(store.stress, StressReading(value: 34, label: "Relaxed"))
         XCTAssertEqual(store.readiness, ReadinessReading(value: 81))
+        XCTAssertEqual(store.energy, 72)
         XCTAssertEqual(store.lastSync, when)
+        XCTAssertEqual(store.cloudStatus, .live)
+    }
+
+    func test_updateCloudWithNilMetrics() {
+        let store = HealthStore()
+        store.updateCloud(stress: nil, readiness: nil, energy: nil,
+                          at: Date(timeIntervalSince1970: 2_000))
+        XCTAssertNil(store.stress)
+        XCTAssertNil(store.readiness)
+        XCTAssertNil(store.energy)
         XCTAssertEqual(store.cloudStatus, .live)
     }
 
@@ -51,6 +63,7 @@ final class HealthStoreTests: XCTestCase {
         let store = HealthStore()
         store.updateCloud(stress: StressReading(value: 20, label: "Calm"),
                           readiness: ReadinessReading(value: 70),
+                          energy: 55,
                           at: Date(timeIntervalSince1970: 1))
         store.hrFailed("Bluetooth is off")
         XCTAssertEqual(store.hrStatus, .error("Bluetooth is off"))

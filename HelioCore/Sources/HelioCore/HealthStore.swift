@@ -9,6 +9,7 @@ public final class HealthStore {
     public var hrStatus: SourceStatus = .idle
     public var stress: StressReading?
     public var readiness: ReadinessReading?
+    public var energy: Int?
     public var cloudStatus: SourceStatus = .idle
     public var lastSync: Date?
 
@@ -23,11 +24,11 @@ public final class HealthStore {
         hrStatus = .stale
     }
 
-    public func updateCloud(stress: StressReading,
-                            readiness: ReadinessReading,
-                            at date: Date) {
+    public func updateCloud(stress: StressReading?, readiness: ReadinessReading?,
+                            energy: Int?, at date: Date) {
         self.stress = stress
         self.readiness = readiness
+        self.energy = energy
         self.lastSync = date
         self.cloudStatus = .live
     }
