@@ -1,0 +1,72 @@
+import CoreBluetooth
+import HelioCore
+
+/// Connects to the strap's standard BLE Heart Rate broadcast and reports BPM.
+/// Reports connection state so the UI can show live vs. reconnecting.
+final class HeartRateMonitor: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
+    private var central: CBCentralManager!
+    private var peripheral: CBPeripheral?
+    private let onBPM: (Int) -> Void
+    private let onConnected: (Bool) -> Void
+
+    private let hrService = CBUUID(string: "180D")
+    private let hrMeasurement = CBUUID(string: "2A37")
+
+    init(onBPM: @escaping (Int) -> Void,
+         onConnected: @escaping (Bool) -> Void) {
+        self.onBPM = onBPM
+        self.onConnected = onConnected
+        super.init()
+        central = CBCentralManager(delegate: self, queue: nil)
+    }
+
+    func centralManagerDidUpdateState(_ central: CBCentralManager) {
+        if central.state == .poweredOn {
+            central.scanForPeripherals(withServices: [hrService])
+        }
+    }
+
+    func centralManager(_ central: CBCentralManager,
+                        didDiscover peripheral: CBPeripheral,
+                        advertisementData: [String: Any],
+                        rssi RSSI: NSNumber) {
+        self.peripheral = peripheral
+        peripheral.delegate = self
+        central.stopScan()
+        central.connect(peripheral)
+    }
+
+    func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
+        onConnected(true)
+        peripheral.discoverServices([hrService])
+    }
+
+    func centralManager(_ central: CBCentralManager,
+                        didDisconnectPeripheral peripheral: CBPeripheral,
+                        error: Error?) {
+        onConnected(false)
+        central.scanForPeripherals(withServices: [hrService])
+    }
+
+    func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
+        for service in peripheral.services ?? [] where service.uuid == hrService {
+            peripheral.discoverCharacteristics([hrMeasurement], for: service)
+        }
+    }
+
+    func peripheral(_ peripheral: CBPeripheral,
+                    didDiscoverCharacteristicsFor service: CBService,
+                    error: Error?) {
+        for char in service.characteristics ?? [] where char.uuid == hrMeasurement {
+            peripheral.setNotifyValue(true, for: char)
+        }
+    }
+
+    func peripheral(_ peripheral: CBPeripheral,
+                    didUpdateValueFor characteristic: CBCharacteristic,
+                    error: Error?) {
+        guard let data = characteristic.value,
+              let bpm = HeartRatePacket.parse(data) else { return }
+        onBPM(bpm)
+    }
+}
