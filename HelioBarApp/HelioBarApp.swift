@@ -7,25 +7,21 @@ struct HelioBarApp: App {
 
     var body: some Scene {
         MenuBarExtra {
-            MenuContentView(store: model.store) {
-                openWindow(id: "settings")
-            }
-            .task { model.start() }
+            MenuContentView(store: model.store) { openWindow(id: "settings") }
+                .task { model.start() }
         } label: {
             Text(barTitle).foregroundStyle(zoneColor)
         }
         .menuBarExtraStyle(.window)
 
         Window("HelioBar Settings", id: "settings") {
-            SettingsView(model: model)
+            SettingsView()
         }
         .windowResizability(.contentSize)
     }
 
     private var barTitle: String {
-        let hr = model.store.liveHR.map(String.init) ?? "–"
-        if let e = model.store.energy { return "\(hr) ⚡\(e)" }
-        return hr
+        model.store.liveHR.map(String.init) ?? "–"
     }
 
     private var zoneColor: Color {
