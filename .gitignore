@@ -2,3 +2,4 @@
 build/
 DerivedData/
 *.xcuserstate
+*.xcodeproj
