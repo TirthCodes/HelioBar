@@ -2,3 +2,6 @@
 build/
 DerivedData/
 *.xcuserstate
+*.xcodeproj
+.build/
+HelioCore/.build/

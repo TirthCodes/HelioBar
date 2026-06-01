@@ -1,0 +1,24 @@
+name: HelioBar
+options:
+  bundleIdPrefix: com.helio
+  deploymentTarget:
+    macOS: "14.0"
+packages:
+  HelioCore:
+    path: HelioCore
+targets:
+  HelioBar:
+    type: application
+    platform: macOS
+    sources:
+      - HelioBarApp
+    dependencies:
+      - package: HelioCore
+    settings:
+      base:
+        INFOPLIST_FILE: HelioBarApp/Resources/Info.plist
+        CODE_SIGN_ENTITLEMENTS: HelioBarApp/Resources/HelioBar.entitlements
+        PRODUCT_BUNDLE_IDENTIFIER: com.helio.HelioBar
+        CODE_SIGN_STYLE: Automatic
+        ENABLE_HARDENED_RUNTIME: YES
+        SWIFT_VERSION: "6.0"
