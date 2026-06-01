@@ -17,7 +17,12 @@ public final class HealthStore {
     private var sessionCount = 0
     private let recentCap = 150
 
+    /// RR-interval count in the most recent packet (>0 ⇒ device sends beat-to-beat data ⇒ HRV possible).
+    public private(set) var lastRRCount = 0
+
     public init() {}
+
+    public func recordRR(_ count: Int) { lastRRCount = count }
 
     public func updateHR(_ bpm: Int) {
         liveHR = bpm

@@ -7,17 +7,17 @@ import HelioCore
 final class HeartRateMonitor: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     private var central: CBCentralManager!
     private var peripheral: CBPeripheral?
-    private let onBPM: @Sendable (Int) -> Void
+    private let onSample: @Sendable (HeartRateSample) -> Void
     private let onConnected: @Sendable (Bool) -> Void
     private let onUnavailable: @Sendable (String) -> Void
 
     private let hrService = CBUUID(string: "180D")
     private let hrMeasurement = CBUUID(string: "2A37")
 
-    init(onBPM: @escaping @Sendable (Int) -> Void,
+    init(onSample: @escaping @Sendable (HeartRateSample) -> Void,
          onConnected: @escaping @Sendable (Bool) -> Void,
          onUnavailable: @escaping @Sendable (String) -> Void) {
-        self.onBPM = onBPM
+        self.onSample = onSample
         self.onConnected = onConnected
         self.onUnavailable = onUnavailable
         super.init()
@@ -89,6 +89,6 @@ final class HeartRateMonitor: NSObject, CBCentralManagerDelegate, CBPeripheralDe
               let sample = HeartRatePacket.parse(data) else { return }
         let hex = data.map { String(format: "%02x", $0) }.joined()
         NSLog("HELIO_HR raw=%@ bpm=%d rrCount=%d", hex, sample.bpm, sample.rrIntervals.count)
-        onBPM(sample.bpm)
+        onSample(sample)
     }
 }

@@ -7,8 +7,11 @@ struct HelioBarApp: App {
 
     var body: some Scene {
         MenuBarExtra {
-            MenuContentView(store: model.store) { openWindow(id: "settings") }
-                .task { model.start() }
+            MenuContentView(store: model.store) {
+                openWindow(id: "settings")
+                NSApplication.shared.activate(ignoringOtherApps: true)
+            }
+            .task { model.start() }
         } label: {
             Text(barTitle).foregroundStyle(zoneColor)
         }

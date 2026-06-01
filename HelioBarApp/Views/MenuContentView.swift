@@ -12,6 +12,7 @@ struct MenuContentView: View {
                 .frame(height: 38)
             statsRow
             zoneBar
+            rrStatus
             Divider()
             footer
         }
@@ -85,6 +86,17 @@ struct MenuContentView: View {
 
     private func zoneColor(_ z: HRZone) -> Color {
         switch z { case .resting: return .green; case .elevated: return .orange; case .high: return .red }
+    }
+
+    @ViewBuilder private var rrStatus: some View {
+        if store.lastRRCount > 0 {
+            Label("RR intervals ✓ (\(store.lastRRCount)/beat) — HRV possible",
+                  systemImage: "waveform.path.ecg")
+                .font(.caption2).foregroundStyle(.green)
+        } else if store.liveHR != nil {
+            Label("No RR intervals — BPM only", systemImage: "waveform")
+                .font(.caption2).foregroundStyle(.secondary)
+        }
     }
 
     private var footer: some View {
