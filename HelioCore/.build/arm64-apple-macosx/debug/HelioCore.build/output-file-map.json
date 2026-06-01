@@ -2,6 +2,13 @@
   "": {
     "swift-dependencies": "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/.build/arm64-apple-macosx/debug/HelioCore.build/primary.swiftdeps"
   },
+  "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/Sources/HelioCore/HealthStore.swift": {
+    "dependencies": "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/.build/arm64-apple-macosx/debug/HelioCore.build/HealthStore.d",
+    "object": "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/.build/arm64-apple-macosx/debug/HelioCore.build/HealthStore.swift.o",
+    "swiftmodule": "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/.build/arm64-apple-macosx/debug/HelioCore.build/HealthStore~partial.swiftmodule",
+    "swift-dependencies": "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/.build/arm64-apple-macosx/debug/HelioCore.build/HealthStore.swiftdeps",
+    "diagnostics": "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/.build/arm64-apple-macosx/debug/HelioCore.build/HealthStore.dia"
+  },
   "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/Sources/HelioCore/HeartRatePacket.swift": {
     "dependencies": "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/.build/arm64-apple-macosx/debug/HelioCore.build/HeartRatePacket.d",
     "object": "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/.build/arm64-apple-macosx/debug/HelioCore.build/HeartRatePacket.swift.o",

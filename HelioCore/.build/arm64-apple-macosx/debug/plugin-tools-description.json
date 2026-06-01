@@ -28,6 +28,10 @@
       "inputs" : [
         {
           "kind" : "file",
+          "name" : "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/Sources/HelioCore/HealthStore.swift"
+        },
+        {
+          "kind" : "file",
           "name" : "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/Sources/HelioCore/HeartRatePacket.swift"
         },
         {
@@ -47,6 +51,7 @@
       "moduleName" : "HelioCore",
       "moduleOutputPath" : "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/.build/arm64-apple-macosx/debug/Modules/HelioCore.swiftmodule",
       "objects" : [
+        "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/.build/arm64-apple-macosx/debug/HelioCore.build/HealthStore.swift.o",
         "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/.build/arm64-apple-macosx/debug/HelioCore.build/HeartRatePacket.swift.o",
         "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/.build/arm64-apple-macosx/debug/HelioCore.build/Models.swift.o"
       ],
@@ -103,6 +108,10 @@
       "outputs" : [
         {
           "kind" : "file",
+          "name" : "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/.build/arm64-apple-macosx/debug/HelioCore.build/HealthStore.swift.o"
+        },
+        {
+          "kind" : "file",
           "name" : "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/.build/arm64-apple-macosx/debug/HelioCore.build/HeartRatePacket.swift.o"
         },
         {
@@ -116,6 +125,7 @@
       ],
       "prepareForIndexing" : false,
       "sources" : [
+        "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/Sources/HelioCore/HealthStore.swift",
         "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/Sources/HelioCore/HeartRatePacket.swift",
         "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/Sources/HelioCore/Models.swift"
       ],
@@ -224,6 +234,10 @@
       "inputs" : [
         {
           "kind" : "file",
+          "name" : "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/Tests/HelioCoreTests/HealthStoreTests.swift"
+        },
+        {
+          "kind" : "file",
           "name" : "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/Tests/HelioCoreTests/HeartRatePacketTests.swift"
         },
         {
@@ -243,6 +257,7 @@
       "moduleName" : "HelioCoreTests",
       "moduleOutputPath" : "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/.build/arm64-apple-macosx/debug/Modules/HelioCoreTests.swiftmodule",
       "objects" : [
+        "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/.build/arm64-apple-macosx/debug/HelioCoreTests.build/HealthStoreTests.swift.o",
         "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/.build/arm64-apple-macosx/debug/HelioCoreTests.build/HeartRatePacketTests.swift.o"
       ],
       "otherArguments" : [
@@ -297,6 +312,10 @@
       "outputs" : [
         {
           "kind" : "file",
+          "name" : "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/.build/arm64-apple-macosx/debug/HelioCoreTests.build/HealthStoreTests.swift.o"
+        },
+        {
+          "kind" : "file",
           "name" : "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/.build/arm64-apple-macosx/debug/HelioCoreTests.build/HeartRatePacketTests.swift.o"
         },
         {
@@ -306,6 +325,7 @@
       ],
       "prepareForIndexing" : false,
       "sources" : [
+        "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/Tests/HelioCoreTests/HealthStoreTests.swift",
         "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/Tests/HelioCoreTests/HeartRatePacketTests.swift"
       ],
       "tempsPath" : "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/.build/arm64-apple-macosx/debug/HelioCoreTests.build",
@@ -323,6 +343,7 @@
       "-package-name",
       "heliocore",
       "-c",
+      "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/Sources/HelioCore/HealthStore.swift",
       "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/Sources/HelioCore/HeartRatePacket.swift",
       "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/Sources/HelioCore/Models.swift",
       "-I",
@@ -444,6 +465,7 @@
       "-package-name",
       "heliocore",
       "-c",
+      "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/Tests/HelioCoreTests/HealthStoreTests.swift",
       "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/Tests/HelioCoreTests/HeartRatePacketTests.swift",
       "-I",
       "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/.build/arm64-apple-macosx/debug/Modules",
@@ -540,6 +562,10 @@
         },
         {
           "kind" : "file",
+          "name" : "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/Sources/HelioCore/HealthStore.swift"
+        },
+        {
+          "kind" : "file",
           "name" : "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/Sources/HelioCore/HeartRatePacket.swift"
         },
         {
@@ -572,6 +598,10 @@
         },
         {
           "kind" : "file",
+          "name" : "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/.build/arm64-apple-macosx/debug/HelioCore.build/HealthStore.swift.o"
+        },
+        {
+          "kind" : "file",
           "name" : "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/.build/arm64-apple-macosx/debug/HelioCore.build/HeartRatePacket.swift.o"
         },
         {
@@ -581,6 +611,10 @@
         {
           "kind" : "file",
           "name" : "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/.build/arm64-apple-macosx/debug/HelioCorePackageTests.build/runner.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/.build/arm64-apple-macosx/debug/HelioCoreTests.build/HealthStoreTests.swift.o"
         },
         {
           "kind" : "file",
@@ -595,6 +629,10 @@
         {
           "kind" : "virtual",
           "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tirth/Desktop/Projects/HelioBar/HelioCore/Tests/HelioCoreTests/HealthStoreTests.swift"
         },
         {
           "kind" : "file",
