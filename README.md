@@ -7,6 +7,20 @@ over Bluetooth, no cloud, no account, nothing leaves your Mac.
 The strap broadcasts heart rate over the standard BLE Heart Rate service, and
 HelioBar reads it straight from CoreBluetooth.
 
+## 📥 Just want to use it? (no GitHub or coding needed)
+
+1. **[Download HelioBar here](https://github.com/TirthCodes/HelioBar/releases/latest)** — grab `HelioBar.zip` under *Assets*.
+2. **Double-click the zip** to unzip → you get `HelioBar.app`.
+3. **Drag `HelioBar.app` into your Applications folder.**
+4. **First time only:** macOS says *"Apple cannot verify this app"* (it's a free app, not paid-signed with Apple). To open it: **right-click** the app → **Open** → **Open** again — or go to **System Settings → Privacy & Security** and click **"Open Anyway"**.
+5. Click **Allow** for Bluetooth.
+
+Then in the **Zepp** app: Device → Helio Strap → **Health Monitoring** → turn on **Heart Rate Push**. Your live heart rate shows up in the menu bar within seconds.
+
+> 💡 **Notch tip:** if the icon hides under the notch, hold **⌘** and drag it out to the right.
+
+The rest of this README is for developers who want to build it themselves.
+
 ## Features
 
 - **Live HR in the menu bar** — the number, zone-tinted (green / orange / red) with a trend arrow (`♥ 84 ↑`)
