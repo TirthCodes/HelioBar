@@ -32,7 +32,8 @@ The rest of this README is for developers who want to build it themselves.
 
 ## Requirements
 
-- macOS 14+ (built with Xcode 26 / Swift 6)
+- macOS 14+
+- Apple Command Line Tools (`xcode-select -p` should point at Command Line Tools) or full Xcode
 - An Amazfit Helio Strap (or any device that broadcasts the standard BLE Heart Rate service `0x180D`)
 
 ## Setup
@@ -47,6 +48,32 @@ The rest of this README is for developers who want to build it themselves.
 
 ## Build & install
 
+### Command Line Tools path
+
+You do not need full Xcode to run HelioBar. If Apple Command Line Tools are installed,
+you can build, install, and launch it with one script:
+
+```bash
+git clone https://github.com/TirthCodes/HelioBar.git
+cd HelioBar
+./scripts/install-and-run.sh
+```
+
+This installs a signed app bundle at `~/Applications/HelioBar.app` and launches it.
+That stable install location is what macOS uses for permissions, notifications,
+and **Launch at login** registration.
+
+To remove it:
+
+```bash
+./scripts/uninstall.sh
+```
+
+Then in HelioBar, open `Settings` and turn on `Launch at login`. You can verify
+that macOS registered it in `System Settings` → `General` → `Login Items & Extensions`.
+
+### Full Xcode path
+
 ```bash
 brew install xcodegen          # one-time
 git clone https://github.com/TirthCodes/HelioBar.git
@@ -57,17 +84,20 @@ cp -R build/Build/Products/Release/HelioBar.app /Applications/
 open /Applications/HelioBar.app
 ```
 
-Run the logic tests with `cd HelioCore && swift test`.
+Run the logic package build with `cd HelioCore && swift build`.
+
+If full Xcode is installed, you can also run the logic tests with `cd HelioCore && swift test`.
 
 ## Architecture
 
 - **`HelioCore/`** — a Swift package with the pure, unit-tested logic: `HealthStore`
   (the single source of truth), the BLE Heart Rate packet parser, HR-zone math, and the
   elevated-HR alert engine. Run via `swift test`.
-- **`HelioBarApp/`** — the macOS app target (generated with XcodeGen): an AppKit
-  `NSStatusItem` + `NSPopover` driving SwiftUI views, and a CoreBluetooth `HeartRateMonitor`.
-  The menu bar uses AppKit (not SwiftUI's `MenuBarExtra`) because `NSStatusItem` survives
-  sleep/wake reliably.
+- **`HelioBarApp/`** — the macOS app sources: an AppKit `NSStatusItem` + `NSPopover`
+  driving SwiftUI views, and a CoreBluetooth `HeartRateMonitor`. The menu bar uses
+  AppKit (not SwiftUI's `MenuBarExtra`) because `NSStatusItem` survives sleep/wake reliably.
+- **Root `Package.swift`** — a SwiftPM executable wrapper so the app can be built with
+  Apple Command Line Tools, without relying on Xcode's build system.
 
 The UI only ever reads `HealthStore`; the BLE monitor pushes into it. Each piece has one job
 and is testable in isolation.
