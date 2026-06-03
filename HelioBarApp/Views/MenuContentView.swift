@@ -132,6 +132,7 @@ private struct Sparkline: View {
     }
 }
 
+#if !SWIFT_PACKAGE
 #Preview("live") {
     let s = HealthStore()
     [62,65,70,68,72,80,95,110,90,75,72,71].forEach { s.updateHR($0) }
@@ -141,3 +142,4 @@ private struct Sparkline: View {
 #Preview("idle") {
     MenuContentView(store: HealthStore(), onSettings: {})
 }
+#endif

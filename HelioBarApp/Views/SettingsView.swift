@@ -7,6 +7,7 @@ struct SettingsView: View {
     @AppStorage("alertThreshold") private var alertThreshold = 100
     @AppStorage("alertDurationMin") private var alertDurationMin = 3
     @State private var launchAtLogin = (SMAppService.mainApp.status == .enabled)
+    @State private var launchAtLoginError: String?
 
     var body: some View {
         Form {
@@ -23,6 +24,11 @@ struct SettingsView: View {
             Section {
                 Toggle("Launch at login", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, on in setLaunch(on) }
+                if let launchAtLoginError {
+                    Text(launchAtLoginError)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
             }
         }
         .formStyle(.grouped)
@@ -33,6 +39,11 @@ struct SettingsView: View {
         do {
             if on { try SMAppService.mainApp.register() }
             else  { try SMAppService.mainApp.unregister() }
-        } catch { launchAtLogin = !on }
+            launchAtLoginError = nil
+            launchAtLogin = (SMAppService.mainApp.status == .enabled)
+        } catch {
+            launchAtLogin = (SMAppService.mainApp.status == .enabled)
+            launchAtLoginError = error.localizedDescription
+        }
     }
 }
