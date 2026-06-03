@@ -14,6 +14,7 @@ struct MenuContentView: View {
                 hrRow
                 Sparkline(values: store.recent)
                     .frame(height: 38)
+                batteryRow
                 statsRow
                 zoneBar
                 Divider()
@@ -58,6 +59,32 @@ struct MenuContentView: View {
         case .error(let m):
             Text(m).font(.caption).foregroundStyle(.orange)
         }
+    }
+
+    private var batteryRow: some View {
+        HStack(spacing: 6) {
+            Image(systemName: batterySymbol)
+                .foregroundStyle(batteryColor)
+            Text(store.batteryPercent.map { "strap battery \($0)%" } ?? "strap battery —")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Spacer()
+        }
+    }
+
+    private var batterySymbol: String {
+        guard let percent = store.batteryPercent else { return "battery.0percent" }
+        switch percent {
+        case ..<20: return "battery.25percent"
+        case ..<60: return "battery.50percent"
+        case ..<85: return "battery.75percent"
+        default: return "battery.100percent"
+        }
+    }
+
+    private var batteryColor: Color {
+        guard let percent = store.batteryPercent else { return .secondary }
+        return percent < 20 ? .orange : .secondary
     }
 
     private var statsRow: some View {

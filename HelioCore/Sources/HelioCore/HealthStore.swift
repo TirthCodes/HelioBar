@@ -7,6 +7,7 @@ import Observation
 public final class HealthStore {
     public var liveHR: Int?
     public var hrStatus: SourceStatus = .idle
+    public var batteryPercent: Int?
     public var maxHR: Int = 190
 
     // Session analytics
@@ -34,6 +35,9 @@ public final class HealthStore {
 
     public func hrDisconnected() { hrStatus = .stale }
     public func hrFailed(_ message: String) { hrStatus = .error(message) }
+    public func updateBattery(percent: Int) {
+        batteryPercent = Swift.min(100, Swift.max(0, percent))
+    }
 
     public func resetSession() {
         recent = []; sessionMin = nil; sessionMax = nil

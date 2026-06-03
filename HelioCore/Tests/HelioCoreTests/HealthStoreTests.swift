@@ -27,6 +27,23 @@ final class HealthStoreTests: XCTestCase {
         XCTAssertEqual(s.hrStatus, .error("Bluetooth is off"))
     }
 
+    func test_batteryStartsUnknownAndUpdatesPercentage() {
+        let s = HealthStore()
+        XCTAssertNil(s.batteryPercent)
+
+        s.updateBattery(percent: 15)
+        XCTAssertEqual(s.batteryPercent, 15)
+    }
+
+    func test_batteryPercentIsClampedToValidRange() {
+        let s = HealthStore()
+        s.updateBattery(percent: -1)
+        XCTAssertEqual(s.batteryPercent, 0)
+
+        s.updateBattery(percent: 101)
+        XCTAssertEqual(s.batteryPercent, 100)
+    }
+
     func test_zoneThresholdsByPercentMax() {
         let s = HealthStore()   // default maxHR 190
         s.updateHR(80);  XCTAssertEqual(s.hrZone, .resting)   // 42%

@@ -19,6 +19,9 @@ final class AppModel {
             onSample: { [weak self] sample in
                 Task { @MainActor in self?.handle(bpm: sample.bpm) }
             },
+            onBattery: { [weak self] percent in
+                Task { @MainActor in self?.store.updateBattery(percent: percent) }
+            },
             onConnected: { [weak self] connected in
                 Task { @MainActor in if !connected { self?.store.hrDisconnected() } }
             },
