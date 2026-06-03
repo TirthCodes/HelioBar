@@ -6,8 +6,10 @@ import HelioCore
 struct HelioBarApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
 
+    // No SwiftUI Settings scene: its private showSettingsWindow: selector is
+    // unreliable for accessory apps. The delegate manages the window directly.
     var body: some Scene {
-        Settings { SettingsView() }
+        Settings { EmptyView() }
     }
 }
 
@@ -19,6 +21,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     private let popover = NSPopover()
     private var titleTimer: Timer?
+    private var settingsWindow: NSWindow?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -36,7 +39,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         popover.animates = false
         popover.contentViewController = NSHostingController(
             rootView: MenuContentView(store: model.store,
-                                      onSettings: { AppDelegate.openSettings() }))
+                                      onSettings: { [weak self] in self?.openSettings() }))
 
         titleTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated { self?.updateTitle() }
@@ -82,8 +85,34 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    static func openSettings() {
+    /// Show our own Settings window. Reuses one instance, brings it to front
+    /// reliably even though this is an .accessory (menu-bar-only) app.
+    private func openSettings() {
+        popover.performClose(nil)
+
+        if settingsWindow == nil {
+            let window = NSWindow(
+                contentRect: NSRect(x: 0, y: 0, width: 330, height: 380),
+                styleMask: [.titled, .closable],
+                backing: .buffered,
+                defer: false)
+            window.title = "HelioBar Settings"
+            window.contentViewController = NSHostingController(rootView: SettingsView())
+            window.isReleasedWhenClosed = false
+            window.delegate = self
+            window.center()
+            settingsWindow = window
+        }
+
+        NSApp.setActivationPolicy(.regular)   // allow a normal, focusable window
         NSApp.activate(ignoringOtherApps: true)
-        NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+        settingsWindow?.makeKeyAndOrderFront(nil)
+    }
+}
+
+extension AppDelegate: NSWindowDelegate {
+    func windowWillClose(_ notification: Notification) {
+        // Back to menu-bar-only once Settings closes: no lingering Dock icon.
+        NSApp.setActivationPolicy(.accessory)
     }
 }
