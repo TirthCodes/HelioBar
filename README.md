@@ -26,6 +26,7 @@ The rest of this README is for developers who want to build it themselves.
 - **Live HR in the menu bar** — the number, zone-tinted (green / orange / red) with a trend arrow (`♥ 84 ↑`)
 - **Dropdown** with a live HR **sparkline**, session **min / avg / max**, a **time-in-zone** bar, and **% of max HR**
 - **Strap battery** — reads battery percentage directly from the standard BLE Battery service
+- **Low-battery alerts** — optional macOS notification when the strap battery drops below your threshold
 - **Personalized zones** — set your age; zones scale to your estimated max HR (≈ 220 − age)
 - **Elevated-HR alerts** — a macOS notification when your HR stays above a threshold for N minutes (a desk-stress nudge)
 - **Breathing biofeedback** — a guided inhale/exhale timer, inline in the dropdown, so you can watch your HR settle in real time
