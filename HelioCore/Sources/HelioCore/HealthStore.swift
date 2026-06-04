@@ -8,6 +8,7 @@ public final class HealthStore {
     public var liveHR: Int?
     public var hrStatus: SourceStatus = .idle
     public var batteryPercent: Int?
+    public var batteryEstimate: BatteryEstimate = .calibrating
     public var maxHR: Int = 190
 
     // Session analytics
@@ -18,6 +19,7 @@ public final class HealthStore {
     private var sessionSum = 0
     private var sessionCount = 0
     private let recentCap = 150
+    private let batteryEstimateEngine = BatteryEstimateEngine()
 
     public init() {}
 
@@ -36,7 +38,9 @@ public final class HealthStore {
     public func hrDisconnected() { hrStatus = .stale }
     public func hrFailed(_ message: String) { hrStatus = .error(message) }
     public func updateBattery(percent: Int) {
-        batteryPercent = Swift.min(100, Swift.max(0, percent))
+        let clamped = Swift.min(100, Swift.max(0, percent))
+        batteryPercent = clamped
+        batteryEstimate = batteryEstimateEngine.record(percent: clamped)
     }
 
     public func resetSession() {

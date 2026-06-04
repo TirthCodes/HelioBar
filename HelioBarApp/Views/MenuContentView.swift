@@ -65,11 +65,28 @@ struct MenuContentView: View {
         HStack(spacing: 6) {
             Image(systemName: batterySymbol)
                 .foregroundStyle(batteryColor)
-            Text(store.batteryPercent.map { "strap battery \($0)%" } ?? "strap battery —")
+            Text(batteryText)
                 .font(.caption)
                 .foregroundStyle(.secondary)
             Spacer()
         }
+    }
+
+    private var batteryText: String {
+        guard let percent = store.batteryPercent else { return "strap battery —" }
+        switch store.batteryEstimate {
+        case .calibrating:
+            return "strap battery \(percent)% · calibrating"
+        case .ready(let remaining):
+            return "strap battery \(percent)% · ~\(formatRemaining(remaining)) left"
+        }
+    }
+
+    private func formatRemaining(_ remaining: TimeInterval) -> String {
+        let hours = Swift.max(0, Int((remaining / 3600).rounded()))
+        if hours >= 48 { return "\(Int((Double(hours) / 24).rounded()))d" }
+        if hours >= 1 { return "\(hours)h" }
+        return "<1h"
     }
 
     private var batterySymbol: String {

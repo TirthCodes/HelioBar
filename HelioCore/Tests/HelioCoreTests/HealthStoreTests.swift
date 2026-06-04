@@ -30,6 +30,7 @@ final class HealthStoreTests: XCTestCase {
     func test_batteryStartsUnknownAndUpdatesPercentage() {
         let s = HealthStore()
         XCTAssertNil(s.batteryPercent)
+        XCTAssertEqual(s.batteryEstimate, .calibrating)
 
         s.updateBattery(percent: 15)
         XCTAssertEqual(s.batteryPercent, 15)
