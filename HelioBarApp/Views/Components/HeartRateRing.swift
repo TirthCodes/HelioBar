@@ -23,10 +23,20 @@ struct HeartRateRing: View {
                 .trim(from: 0, to: ghost ? 0 : clamped)
                 .stroke(
                     AngularGradient(
-                        gradient: Gradient(colors: Theme.ringGradient),
+                        // Full-ring ramp; arc length shows progress. The last stop
+                        // returns to green so the 360°/0° seam — where the arc's
+                        // rounded start-cap overhangs — is green-on-green instead of
+                        // showing a red dot. Red peaks at 0.85, inside the unfilled gap.
+                        gradient: Gradient(stops: [
+                            .init(color: Theme.resting,  location: 0.00),
+                            .init(color: Color(red: 0.62, green: 0.82, blue: 0.29), location: 0.40),
+                            .init(color: Theme.elevated, location: 0.66),
+                            .init(color: Theme.high,     location: 0.85),
+                            .init(color: Theme.resting,  location: 1.00),
+                        ]),
                         center: .center,
                         startAngle: .degrees(0),
-                        endAngle: .degrees(360)   // full-ring ramp; arc length shows progress
+                        endAngle: .degrees(360)
                     ),
                     style: StrokeStyle(lineWidth: 14, lineCap: .round)
                 )
