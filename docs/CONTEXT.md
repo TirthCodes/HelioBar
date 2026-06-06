@@ -18,7 +18,8 @@ leaves the Mac.
 - Bundle id: `com.helio.HelioBar`, deployment target **macOS 26** (raised from 14 for the UI redesign), Swift 6 / Xcode 26
 
 ### Current feature set (all HR-only, all local)
-- Live HR number in the menu bar, zone-tinted (green/orange/red) + trend arrow (`♥ 84 ↑`)
+- Live HR in the menu bar: a fixed-width dark pill with a zone-tinted (green/orange/red)
+  heart + number (`♥ 84`), drawn as a custom `NSImage`. No trend arrow — trend moved to the popover ring.
 - Dropdown: live **sparkline**, session **min/avg/max**, **time-in-zone** bar, **% of max HR**
 - **Personalized zones** — user sets age; zones scale to estimated max HR (≈ 220 − age)
 - **Elevated-HR alerts** — macOS notification when HR stays above a threshold for N minutes
@@ -48,8 +49,10 @@ Two pieces, deliberately separated so the logic is unit-tested in isolation:
 ### `HelioBarApp/` — the macOS app target (XcodeGen-generated)
 - `HelioBarApp.swift` — `@main` App with `@NSApplicationDelegateAdaptor`. **AppKit
   `NSStatusItem` + `NSPopover`** driving SwiftUI (NOT SwiftUI `MenuBarExtra` — see decisions).
-  `AppDelegate` owns the status item, a 1s timer updating the title, and a **self-managed
-  `NSWindow` for Settings** (see Settings fix below). Conforms to `NSWindowDelegate`.
+  `AppDelegate` owns the status item, a 1s timer updating the menu-bar **image** (via
+  `MenuBarIcon`, not an attributed-string title), and a **self-managed `NSWindow` for
+  Settings** (see Settings fix below; content rect 330×400 to match `SettingsView`).
+  Conforms to `NSWindowDelegate`.
 - `AppModel.swift` — `@MainActor @Observable`, owns `HealthStore` + `HeartRateMonitor`
   + `ElevatedHRAlertEngine`. `start()` requests notification auth, wires BLE callbacks,
   `handle(bpm:)` → `applyPrefs()` (reads UserDefaults age→maxHR + alert config) →
@@ -58,13 +61,22 @@ Two pieces, deliberately separated so the logic is unit-tested in isolation:
 - `HeartRateMonitor.swift` — CoreBluetooth. Standard HR service `0x180D`, characteristic
   `0x2A37`. Callbacks `onSample`/`onConnected`/`onUnavailable`. Handles all
   `CBManagerState` cases, `didFailToConnect`, `didDisconnect` (re-scan).
-- `Views/MenuContentView.swift` — dropdown UI (HR row, Sparkline, stats, zone bar, footer;
-  toggles to `BreathingView` inline via `@State breathing`). Width 264.
+- `MenuBarIcon.swift` — renders the menu-bar item as a custom `NSImage` (`isTemplate = false`):
+  fixed-width dark pill, zone-tinted heart + centered tabular BPM. Heart tinted via a
+  `hierarchicalColor` symbol config (a template image drawn with `draw(in:)` renders black).
+- `Views/Theme.swift` — shared design tokens (zone color ramp, spacing, radii, rounded
+  typography, `cardSurface()` modifier). Single source of truth for the redesign's look.
+- `Views/Components/` — 8 reusable views: `HeartRateRing`, `PulsingHeart`, `HRSparkline`,
+  `StatCard`, `ZoneBar`, `BatteryPill`, `StatusBadge`, `IconButton`.
+- `Views/MenuContentView.swift` — popover UI, redesigned (calm Apple-Fitness): hero
+  `HeartRateRing`, `StatusBadge`, sparkline card, min/avg/max `StatCard`s, `ZoneBar`,
+  `BatteryPill`, icon toolbar; toggles to `BreathingView` inline via `@State breathing`. Width 300.
 - `Views/BreathingView.swift` — inline guided breathing, 4s inhale/exhale, live HR +
-  start/low/↓ stats.
+  start/low/↓ stats. Redesigned with a gradient orb.
 - `Views/SettingsView.swift` — `@AppStorage` for age/alert config + Launch-at-login toggle.
-  Now also shows launch-at-login **error messages** (from the community PR).
-- `Resources/Info.plist` — `LSUIElement` true, `NSBluetoothAlwaysUsageDescription`, macOS 14 min.
+  Shows launch-at-login **error messages** (from the community PR). Restyled with
+  section-header SF Symbols; frame 330×400.
+- `Resources/Info.plist` — `LSUIElement` true, `NSBluetoothAlwaysUsageDescription`, macOS 26 min.
 - `Resources/HelioBar.entitlements` — app-sandbox + `device.bluetooth` (network REMOVED).
 - Root `Package.swift` — **SwiftPM executable wrapper** (from community PR) so the app
   builds with Command Line Tools, no full Xcode.
