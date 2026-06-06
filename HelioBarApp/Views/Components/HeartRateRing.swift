@@ -26,7 +26,7 @@ struct HeartRateRing: View {
                         gradient: Gradient(colors: Theme.ringGradient),
                         center: .center,
                         startAngle: .degrees(0),
-                        endAngle: .degrees(360 * max(clamped, 0.0001))
+                        endAngle: .degrees(360)   // full-ring ramp; arc length shows progress
                     ),
                     style: StrokeStyle(lineWidth: 14, lineCap: .round)
                 )
