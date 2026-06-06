@@ -1,5 +1,7 @@
 # HelioBar
 
+[![Latest release](https://img.shields.io/github/v/release/TirthCodes/HelioBar)](https://github.com/TirthCodes/HelioBar/releases/latest)
+
 A native macOS **menu bar app** that shows your **live heart rate** from an
 [Amazfit Helio Strap](https://us.amazfit.com/products/helio-strap) — read directly
 over Bluetooth, no cloud, no account, nothing leaves your Mac.
@@ -20,6 +22,17 @@ Then in the **Zepp** app: Device → Helio Strap → **Health Monitoring** → t
 > 💡 **Notch tip:** if the icon hides under the notch, hold **⌘** and drag it out to the right.
 
 The rest of this README is for developers who want to build it themselves.
+
+### What's new in 2.0
+- Redesigned, calm Apple-Fitness interface built around an animated heart-rate ring
+- Strap battery tracking, low-battery alerts, and a calibrated time-remaining estimate
+- Requires **macOS 26+**
+
+See the [v2.0.0 release](https://github.com/TirthCodes/HelioBar/releases/latest) for the full changelog.
+
+> **Network note:** Starting with v2.1, HelioBar adds an optional update check that makes a
+> single call to `api.github.com` for the latest release number. No telemetry, no account,
+> nothing else leaves your Mac — turn it off in **Settings → Updates**. (Not in v2.0.)
 
 ## Features
 

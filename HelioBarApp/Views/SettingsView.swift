@@ -8,6 +8,8 @@ struct SettingsView: View {
     @AppStorage("alertDurationMin") private var alertDurationMin = 3
     @AppStorage("batteryAlertEnabled") private var batteryAlertEnabled = true
     @AppStorage("batteryAlertThreshold") private var batteryAlertThreshold = 20
+    @AppStorage("autoUpdateCheck") private var autoUpdateCheck = true
+    let updater: UpdateChecker
     @State private var launchAtLogin = (SMAppService.mainApp.status == .enabled)
     @State private var launchAtLoginError: String?
 
@@ -34,6 +36,16 @@ struct SettingsView: View {
                 Label("Strap battery alert", systemImage: "battery.25percent")
             }
             Section {
+                Toggle("Check for updates automatically", isOn: $autoUpdateCheck)
+                HStack {
+                    Button("Check now") { Task { await updater.checkNow() } }
+                    Spacer()
+                    Text(updateStatusText).font(.caption).foregroundStyle(.secondary)
+                }
+            } header: {
+                Label("Updates", systemImage: "arrow.down.circle")
+            }
+            Section {
                 Toggle("Launch at login", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, on in setLaunch(on) }
                 if let launchAtLoginError {
@@ -45,6 +57,21 @@ struct SettingsView: View {
         }
         .formStyle(.grouped)
         .frame(width: 330, height: 400)
+    }
+
+    private var updateStatusText: String {
+        switch updater.status {
+        case .checking: return "Checking…"
+        case .failed:   return "Couldn't check"
+        case .upToDate: return "Up to date"
+        case .idle:
+            if updater.available != nil { return "Update available" }
+            if let d = updater.lastChecked {
+                let f = RelativeDateTimeFormatter()
+                return "Checked \(f.localizedString(for: d, relativeTo: Date()))"
+            }
+            return ""
+        }
     }
 
     private func setLaunch(_ on: Bool) {

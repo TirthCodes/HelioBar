@@ -39,6 +39,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         popover.animates = false
         popover.contentViewController = NSHostingController(
             rootView: MenuContentView(store: model.store,
+                                      updater: model.updateChecker,
                                       onSettings: { [weak self] in self?.openSettings() }))
 
         titleTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
@@ -78,7 +79,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 backing: .buffered,
                 defer: false)
             window.title = "HelioBar Settings"
-            window.contentViewController = NSHostingController(rootView: SettingsView())
+            window.contentViewController = NSHostingController(rootView: SettingsView(updater: model.updateChecker))
             window.isReleasedWhenClosed = false
             window.delegate = self
             window.center()

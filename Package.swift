@@ -22,6 +22,7 @@ let package = Package(
                 "AppModel.swift",
                 "HeartRateMonitor.swift",
                 "MenuBarIcon.swift",
+                "UpdateChecker.swift",
                 "Views",
             ]
         ),
