@@ -29,15 +29,16 @@ enum MenuBarIcon {
             pill.lineWidth = 1
             pill.stroke()
 
-            // Heart glyph
+            // Heart glyph — tinted via a colored symbol configuration. A template
+            // image drawn with draw(in:) ignores the set fill color and renders
+            // black, so we bake the zone color into the symbol instead.
             let symbolConfig = NSImage.SymbolConfiguration(pointSize: 11, weight: .semibold)
+                .applying(NSImage.SymbolConfiguration(hierarchicalColor: contentColor))
             if let heart = NSImage(systemSymbolName: "heart.fill", accessibilityDescription: nil)?
                 .withSymbolConfiguration(symbolConfig) {
-                let tinted = heart
-                tinted.isTemplate = true
+                heart.isTemplate = false
                 let hRect = NSRect(x: 7, y: (rect.height - 11) / 2, width: 12, height: 11)
-                contentColor.set()
-                tinted.draw(in: hRect)
+                heart.draw(in: hRect)
             }
 
             // Number (centered in a fixed slot for up to 3 digits)
