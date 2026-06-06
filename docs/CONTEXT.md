@@ -64,6 +64,9 @@ Two pieces, deliberately separated so the logic is unit-tested in isolation:
 - `MenuBarIcon.swift` — renders the menu-bar item as a custom `NSImage` (`isTemplate = false`):
   fixed-width dark pill, zone-tinted heart + centered tabular BPM. Heart tinted via a
   `hierarchicalColor` symbol config (a template image drawn with `draw(in:)` renders black).
+- `UpdateChecker.swift` — `@MainActor @Observable`; on launch (≤1×/24h) GETs GitHub
+  `releases/latest`, compares via `HelioCore.isVersion(_:newerThan:)`, and exposes
+  `available` for the popover banner. Toggle `autoUpdateCheck` (default on) + manual `checkNow()`.
 - `Views/Theme.swift` — shared design tokens (zone color ramp, spacing, radii, rounded
   typography, `cardSurface()` modifier). Single source of truth for the redesign's look.
 - `Views/Components/` — 8 reusable views: `HeartRateRing`, `PulsingHeart`, `HRSparkline`,
@@ -77,7 +80,8 @@ Two pieces, deliberately separated so the logic is unit-tested in isolation:
   Shows launch-at-login **error messages** (from the community PR). Restyled with
   section-header SF Symbols; frame 330×400.
 - `Resources/Info.plist` — `LSUIElement` true, `NSBluetoothAlwaysUsageDescription`, macOS 26 min.
-- `Resources/HelioBar.entitlements` — app-sandbox + `device.bluetooth` (network REMOVED).
+- `Resources/HelioBar.entitlements` — app-sandbox + `device.bluetooth` + `network.client`
+  (outbound only, for the update check — see `UpdateChecker.swift`).
 - Root `Package.swift` — **SwiftPM executable wrapper** (from community PR) so the app
   builds with Command Line Tools, no full Xcode.
 - `project.yml` — XcodeGen config.
