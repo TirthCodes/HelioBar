@@ -19,3 +19,26 @@ public func isVersion(_ latest: String, newerThan current: String) -> Bool {
     }
     return false
 }
+
+/// The subset of GitHub's `releases/latest` payload we use.
+public struct LatestRelease: Decodable, Equatable, Sendable {
+    public let tagName: String
+    public let htmlURL: String
+
+    enum CodingKeys: String, CodingKey {
+        case tagName = "tag_name"
+        case htmlURL = "html_url"
+    }
+
+    public init(tagName: String, htmlURL: String) {
+        self.tagName = tagName
+        self.htmlURL = htmlURL
+    }
+
+    /// Tag with a single leading "v"/"V" removed (e.g. "v2.1.0" -> "2.1.0").
+    public var version: String {
+        var t = tagName
+        if let first = t.first, first == "v" || first == "V" { t.removeFirst() }
+        return t
+    }
+}

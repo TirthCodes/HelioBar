@@ -13,4 +13,14 @@ final class UpdateCheckTests: XCTestCase {
     func test_shorterIsOlder() { XCTAssertTrue(isVersion("2.1.1", newerThan: "2.1")) }
     func test_emptyLatestIsNotNewer() { XCTAssertFalse(isVersion("", newerThan: "2.0.0")) }
     func test_garbageLatestIsNotNewer() { XCTAssertFalse(isVersion("abc", newerThan: "2.0.0")) }
+
+    func test_decodesLatestRelease() throws {
+        let json = """
+        {"tag_name":"v2.1.0","html_url":"https://github.com/TirthCodes/HelioBar/releases/tag/v2.1.0","name":"HelioBar 2.1"}
+        """.data(using: .utf8)!
+        let release = try JSONDecoder().decode(LatestRelease.self, from: json)
+        XCTAssertEqual(release.tagName, "v2.1.0")
+        XCTAssertEqual(release.htmlURL, "https://github.com/TirthCodes/HelioBar/releases/tag/v2.1.0")
+        XCTAssertEqual(release.version, "2.1.0")
+    }
 }
