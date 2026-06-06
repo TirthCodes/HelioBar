@@ -4,7 +4,7 @@ import HelioCore
 /// Renders the menu-bar item as a fixed-width dark pill with a zone-colored
 /// heart + BPM. Drawn as a non-template NSImage so the color is preserved.
 enum MenuBarIcon {
-    private static let size = NSSize(width: 58, height: 20)
+    private static let size = NSSize(width: 66, height: 22)
 
     static func image(bpm: Int?, zone: HRZone?, status: SourceStatus) -> NSImage {
         let contentColor: NSColor
@@ -32,12 +32,12 @@ enum MenuBarIcon {
             // Heart glyph — tinted via a colored symbol configuration. A template
             // image drawn with draw(in:) ignores the set fill color and renders
             // black, so we bake the zone color into the symbol instead.
-            let symbolConfig = NSImage.SymbolConfiguration(pointSize: 11, weight: .semibold)
+            let symbolConfig = NSImage.SymbolConfiguration(pointSize: 13, weight: .semibold)
                 .applying(NSImage.SymbolConfiguration(hierarchicalColor: contentColor))
             if let heart = NSImage(systemSymbolName: "heart.fill", accessibilityDescription: nil)?
                 .withSymbolConfiguration(symbolConfig) {
                 heart.isTemplate = false
-                let hRect = NSRect(x: 7, y: (rect.height - 11) / 2, width: 12, height: 11)
+                let hRect = NSRect(x: 8, y: (rect.height - 13) / 2, width: 14, height: 13)
                 heart.draw(in: hRect)
             }
 
@@ -45,11 +45,11 @@ enum MenuBarIcon {
             let text = bpm.map(String.init) ?? "–"
             let para = NSMutableParagraphStyle(); para.alignment = .center
             let attrs: [NSAttributedString.Key: Any] = [
-                .font: NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .semibold),
+                .font: NSFont.monospacedDigitSystemFont(ofSize: 14, weight: .semibold),
                 .foregroundColor: contentColor,
                 .paragraphStyle: para,
             ]
-            let numberSlot = NSRect(x: 22, y: (rect.height - 14) / 2 - 1, width: 30, height: 16)
+            let numberSlot = NSRect(x: 24, y: (rect.height - 17) / 2 - 1, width: 36, height: 18)
             (text as NSString).draw(in: numberSlot, withAttributes: attrs)
             return true
         }
