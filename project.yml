@@ -2,7 +2,7 @@ name: HelioBar
 options:
   bundleIdPrefix: com.helio
   deploymentTarget:
-    macOS: "14.0"
+    macOS: "26.0"
 packages:
   HelioCore:
     path: HelioCore

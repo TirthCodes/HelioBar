@@ -12,30 +12,35 @@ struct BreathingView: View {
     private let timer = Timer.publish(every: 4, on: .main, in: .common).autoconnect()
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: Theme.md) {
             HStack {
-                Text("Breathe").font(.headline)
+                Text("Breathe").font(.system(size: 16, weight: .bold, design: .rounded))
                 Spacer()
                 Button("Done", action: onClose).controlSize(.small)
             }
 
             Text(inhaling ? "Inhale…" : "Exhale…")
-                .font(.subheadline).foregroundStyle(.secondary)
+                .font(.system(size: 14, design: .rounded))
+                .foregroundStyle(.secondary)
 
             ZStack {
-                Circle().fill(.blue.opacity(0.15))
-                Circle().stroke(.blue, lineWidth: 2)
+                Circle()
+                    .fill(RadialGradient(
+                        colors: [Theme.resting.opacity(0.35), Color.blue.opacity(0.12)],
+                        center: .center, startRadius: 4, endRadius: 90))
+                Circle().strokeBorder(Theme.resting.opacity(0.7), lineWidth: 2)
             }
             .frame(width: inhaling ? 150 : 80, height: inhaling ? 150 : 80)
+            .shadow(color: Theme.resting.opacity(0.4), radius: 12)
             .animation(.easeInOut(duration: 4), value: inhaling)
             .frame(height: 160)   // reserve space so the popover doesn't jump
 
             VStack(spacing: 2) {
                 Text(store.liveHR.map { "\($0) bpm" } ?? "—")
-                    .font(.system(size: 26, weight: .bold)).monospacedDigit()
+                    .font(Theme.bpmFont(26))
                 if let s = startHR, let l = lowHR {
                     Text("start \(s) · low \(l) · ↓\(Swift.max(0, s - l))")
-                        .font(.caption).foregroundStyle(.secondary)
+                        .font(Theme.captionFont).foregroundStyle(.secondary)
                 }
             }
         }
@@ -48,3 +53,10 @@ struct BreathingView: View {
         }
     }
 }
+
+#if !SWIFT_PACKAGE
+#Preview {
+    let s = HealthStore(); s.updateHR(72)
+    return BreathingView(store: s) {}.frame(width: 300).padding().background(.black)
+}
+#endif

@@ -30,7 +30,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         statusItem.autosaveName = "HelioBarStatusItem"
         if let button = statusItem.button {
-            button.title = "♥ –"
+            button.image = MenuBarIcon.image(bpm: nil, zone: nil, status: .idle)
             button.action = #selector(togglePopover(_:))
             button.target = self
         }
@@ -50,28 +50,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func updateTitle() {
         guard let button = statusItem?.button else { return }
         let store = model.store
-        guard let hr = store.liveHR else {
-            button.attributedTitle = NSAttributedString(string: "♥ –")
-            return
-        }
-        let arrow: String
-        switch store.hrTrend {
-        case .rising:  arrow = " ↑"
-        case .falling: arrow = " ↓"
-        default:       arrow = ""
-        }
-        let color: NSColor
-        switch store.hrZone {
-        case .elevated: color = .systemOrange
-        case .high:     color = .systemRed
-        default:        color = .labelColor
-        }
-        button.attributedTitle = NSAttributedString(
-            string: "♥ \(hr)\(arrow)",
-            attributes: [
-                .foregroundColor: color,
-                .font: NSFont.monospacedDigitSystemFont(ofSize: NSFont.systemFontSize, weight: .regular),
-            ])
+        button.image = MenuBarIcon.image(bpm: store.liveHR,
+                                         zone: store.hrZone,
+                                         status: store.hrStatus)
     }
 
     @objc private func togglePopover(_ sender: Any?) {
@@ -92,7 +73,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         if settingsWindow == nil {
             let window = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 330, height: 380),
+                contentRect: NSRect(x: 0, y: 0, width: 330, height: 400),
                 styleMask: [.titled, .closable],
                 backing: .buffered,
                 defer: false)

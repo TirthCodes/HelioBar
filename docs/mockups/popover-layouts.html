@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HelioBar — Option A + Menu Bar Options</title>
+<style>
+  :root {
+    --bg: #0a0a0c;
+    --panel: rgba(26, 26, 30, 0.94);
+    --panel-2: rgba(255, 255, 255, 0.05);
+    --panel-stroke: rgba(255, 255, 255, 0.09);
+    --text: #f5f5f7;
+    --text-2: rgba(235, 235, 245, 0.62);
+    --text-3: rgba(235, 235, 245, 0.34);
+    --green: #34c759;
+    --orange: #ff9f0a;
+    --red: #ff453a;
+    --blue: #0a84ff;
+    --font: -apple-system, BlinkMacSystemFont, "SF Pro Rounded", "SF Pro Display", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background:
+      radial-gradient(1200px 600px at 18% -10%, rgba(52,199,89,0.10), transparent 60%),
+      radial-gradient(1000px 700px at 112% 8%, rgba(255,69,58,0.10), transparent 55%),
+      var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    min-height: 100vh;
+    padding: 52px 32px 80px;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; text-align: center; }
+  .sub { text-align: center; color: var(--text-2); margin-top: 8px; font-size: 14px; }
+  h2 { text-align:center; font-size: 18px; font-weight: 700; margin: 64px 0 6px; letter-spacing:-0.01em; }
+  .h2sub { text-align:center; color: var(--text-3); font-size: 13px; margin-bottom: 26px; }
+
+  .note { font-size: 12px; color: var(--text-3); max-width: 320px; text-align: center; line-height: 1.55; }
+  .reco { color: var(--green); }
+  .label { font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-2); }
+
+  /* ---------- POPOVER ---------- */
+  .center { display:flex; justify-content:center; }
+  .col { display:flex; flex-direction:column; align-items:center; gap:16px; }
+  .popover {
+    width: 300px;
+    background: var(--panel);
+    border: 1px solid var(--panel-stroke);
+    border-radius: 22px;
+    box-shadow: 0 30px 70px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05);
+    backdrop-filter: blur(40px) saturate(140%);
+    padding: 20px 18px;
+    position: relative;
+  }
+  .popover::after {
+    content: ""; position: absolute; top: -8px; left: 50%; transform: translateX(-50%) rotate(45deg);
+    width: 16px; height: 16px; background: var(--panel);
+    border-left: 1px solid var(--panel-stroke); border-top: 1px solid var(--panel-stroke);
+    border-radius: 3px;
+  }
+  .stack { display:flex; flex-direction:column; gap:14px; align-items:center; }
+
+  /* HR ring (rounded caps + gradient + glow) */
+  .ring-wrap { position: relative; width: 176px; height: 176px; display:grid; place-items:center; }
+  .ring-wrap svg { position:absolute; inset:0; }
+  .ring-center { display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .bpm { font-weight: 800; line-height: 0.9; font-variant-numeric: tabular-nums; letter-spacing:-0.03em;
+         font-size: 52px; display:flex; align-items:baseline; }
+  .bpm .unit { font-size: 15px; font-weight: 700; color: var(--text-2); letter-spacing:0; margin-left:3px; }
+  .pct { font-size: 14px; color: var(--orange); font-weight: 700; margin-top: 8px;
+         display:flex; align-items:center; gap:6px; }
+  .pct .heart { color: var(--red); }
+
+  .live { display:inline-flex; align-items:center; gap:6px; font-size: 12px; color: var(--green); font-weight: 600; }
+  .live .dot { width:7px; height:7px; border-radius:50%; background: var(--green); box-shadow:0 0 8px var(--green); }
+
+  .card { width:100%; background:var(--panel-2); border:1px solid var(--panel-stroke);
+          border-radius:13px; padding:11px 13px; }
+  .card-title { font-size:11px; color:var(--text-3); font-weight:600; text-transform:uppercase;
+                letter-spacing:0.04em; margin-bottom:7px; }
+  .spark { width:100%; height:46px; display:block; }
+
+  .stats { display:flex; gap:8px; width:100%; }
+  .stat { flex:1; background:var(--panel-2); border:1px solid var(--panel-stroke);
+          border-radius:13px; padding:10px; text-align:center; }
+  .stat .k { font-size:10px; color:var(--text-3); text-transform:uppercase; letter-spacing:0.05em; }
+  .stat .v { font-size:20px; font-weight:800; font-variant-numeric:tabular-nums; margin-top:3px; }
+  .stat.min .v { color:var(--green); } .stat.max .v { color:var(--red); }
+
+  .zone { display:flex; height:8px; width:100%; border-radius:99px; overflow:hidden; gap:2px; }
+  .zone i { display:block; height:100%; border-radius:99px; }
+  .zone .z1 { background:var(--green); flex:6; } .zone .z2 { background:var(--orange); flex:3; } .zone .z3 { background:var(--red); flex:1.2; }
+  .zone-legend { display:flex; gap:12px; font-size:10px; color:var(--text-3); margin-top:7px; }
+  .zone-legend span { display:inline-flex; align-items:center; gap:4px; }
+  .zone-legend .sw { width:7px; height:7px; border-radius:2px; }
+
+  .battery { display:flex; align-items:center; gap:9px; width:100%; background:var(--panel-2);
+             border:1px solid var(--panel-stroke); border-radius:13px; padding:9px 13px; font-size:13px; }
+  .battery .txt { color:var(--text-2); } .battery .txt b { color:var(--text); font-weight:700; }
+  .battery .left { margin-left:auto; color:var(--text-3); font-size:12px; }
+
+  .toolbar { display:flex; gap:8px; width:100%; }
+  .tbtn { flex:1; background:var(--panel-2); border:1px solid var(--panel-stroke); border-radius:13px;
+          padding:11px 0; display:grid; place-items:center; color:var(--text-2); cursor:pointer; }
+  .tbtn svg { width:19px; height:19px; }
+  .tbtn.accent { color:var(--blue); }
+  .tbtn:hover { background:rgba(255,255,255,0.09); color:var(--text); }
+
+  /* ---------- MENU BAR OPTIONS ---------- */
+  .menubar {
+    width: 520px; margin: 0 auto;
+    background: linear-gradient(180deg, rgba(40,40,46,0.96), rgba(30,30,34,0.96));
+    border: 1px solid var(--panel-stroke);
+    border-radius: 10px;
+    height: 32px; display:flex; align-items:center; justify-content:flex-end; gap:14px;
+    padding: 0 12px; backdrop-filter: blur(20px);
+  }
+  .menubar .spacer { margin-right:auto; color:var(--text-3); font-size:11px; }
+  .menubar .clock { color: rgba(255,255,255,0.82); font-size:13px; font-variant-numeric:tabular-nums; }
+  .menubar .sys { color: rgba(255,255,255,0.55); font-size:13px; }
+
+  /* The HelioBar item — dark pill, zone-colored CONTENT, FIXED WIDTH, centered number */
+  .hb {
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    width: 70px;                        /* fixed: fits ♥ + 3 digits, centered */
+    height: 24px; font-size: 14px; font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    background: rgba(0,0,0,0.55);       /* always dark pill */
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 8px;
+  }
+  .hb .glyph { font-size: 13px; }
+  .hb .num { min-width: 30px; text-align:center; }   /* reserves 3 digits, centered */
+
+  .mbrow { display:flex; flex-direction:column; align-items:center; gap:14px; margin-bottom:38px; }
+  .mbrow .label { margin-bottom:2px; }
+  .states { display:flex; gap:10px; align-items:center; }
+  .states .cap { font-size:11px; color:var(--text-3); width:120px; text-align:right; }
+
+  footer { text-align:center; color:var(--text-3); font-size:12px; margin-top:60px; }
+</style>
+</head>
+<body>
+  <h1>HelioBar — Option A, refined</h1>
+  <p class="sub">Rounded-cap gradient ring · proper icons · calm Apple-Fitness · dark · macOS 26</p>
+
+  <!-- ============ POPOVER (Option A) ============ -->
+  <div class="center" style="margin-top:36px;">
+    <div class="col">
+      <div class="label reco">Option A · ring + stacked cards</div>
+      <div class="popover">
+        <div class="stack">
+
+          <div class="ring-wrap">
+            <svg viewBox="0 0 176 176">
+              <defs>
+                <linearGradient id="ring" x1="0%" y1="100%" x2="60%" y2="0%">
+                  <stop offset="0%"  stop-color="#34c759"/>
+                  <stop offset="45%" stop-color="#9fd14a"/>
+                  <stop offset="72%" stop-color="#ff9f0a"/>
+                  <stop offset="100%" stop-color="#ff453a"/>
+                </linearGradient>
+                <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+                  <feGaussianBlur stdDeviation="5" result="b"/>
+                  <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+              </defs>
+              <!-- track -->
+              <circle cx="88" cy="88" r="74" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="14"/>
+              <!-- progress: rounded caps, ~85% fill, starts at bottom -->
+              <circle cx="88" cy="88" r="74" fill="none" stroke="url(#ring)" stroke-width="14"
+                      stroke-linecap="round" filter="url(#glow)"
+                      stroke-dasharray="395 465" stroke-dashoffset="116"
+                      transform="rotate(90 88 88)"/>
+            </svg>
+            <div class="ring-center">
+              <div class="bpm">84<span class="unit">bpm</span></div>
+              <div class="pct"><span class="heart">♥</span> 58% · ↑</div>
+            </div>
+          </div>
+          <div class="live"><span class="dot"></span> live</div>
+
+          <div class="card">
+            <div class="card-title">Last 2 min</div>
+            <svg class="spark" viewBox="0 0 264 46" preserveAspectRatio="none">
+              <defs><linearGradient id="gA" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#ff9f0a" stop-opacity="0.35"/>
+                <stop offset="100%" stop-color="#ff9f0a" stop-opacity="0"/>
+              </linearGradient></defs>
+              <path d="M0,34 L22,30 L44,32 L66,24 L88,26 L110,18 L132,22 L154,12 L176,16 L198,8 L220,14 L242,10 L264,18 L264,46 L0,46 Z" fill="url(#gA)"/>
+              <path d="M0,34 L22,30 L44,32 L66,24 L88,26 L110,18 L132,22 L154,12 L176,16 L198,8 L220,14 L242,10 L264,18" fill="none" stroke="#ff9f0a" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+            </svg>
+          </div>
+
+          <div class="stats">
+            <div class="stat min"><div class="k">min</div><div class="v">61</div></div>
+            <div class="stat avg"><div class="k">avg</div><div class="v">73</div></div>
+            <div class="stat max"><div class="k">max</div><div class="v">98</div></div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Time in zone</div>
+            <div class="zone"><i class="z1"></i><i class="z2"></i><i class="z3"></i></div>
+            <div class="zone-legend">
+              <span><i class="sw" style="background:var(--green)"></i>Resting</span>
+              <span><i class="sw" style="background:var(--orange)"></i>Elevated</span>
+              <span><i class="sw" style="background:var(--red)"></i>High</span>
+            </div>
+          </div>
+
+          <div class="battery">
+            <!-- battery icon -->
+            <svg width="22" height="14" viewBox="0 0 26 14" fill="none">
+              <rect x="0.7" y="0.7" width="22" height="12.6" rx="3.2" stroke="var(--green)" stroke-width="1.4"/>
+              <rect x="2.4" y="2.4" width="12" height="9.2" rx="1.6" fill="var(--green)"/>
+              <rect x="24" y="4.5" width="2" height="5" rx="1" fill="var(--green)"/>
+            </svg>
+            <span class="txt">Strap <b>72%</b></span>
+            <span class="left">~8h left</span>
+          </div>
+
+          <div class="toolbar">
+            <!-- breathe (lungs/wind) -->
+            <div class="tbtn accent" title="Breathe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h9a3 3 0 1 0-3-3"/><path d="M3 17h13a3 3 0 1 1-3 3"/></svg></div>
+            <!-- reset (rotate) -->
+            <div class="tbtn" title="Reset"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4"/></svg></div>
+            <!-- settings (gear) -->
+            <div class="tbtn" title="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></div>
+            <!-- quit (power) -->
+            <div class="tbtn" title="Quit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v8"/><path d="M6.3 7.3a8 8 0 1 0 11.4 0"/></svg></div>
+          </div>
+
+        </div>
+      </div>
+      <p class="note">Ring fills toward % of max HR · sweeps green→orange→red · rounded caps + soft glow · gently pulses at your real BPM.</p>
+    </div>
+  </div>
+
+  <!-- ============ MENU BAR ITEM (final) ============ -->
+  <h2>Menu-bar item — dark pill, zone-colored content</h2>
+  <p class="h2sub">Always-dark rounded pill · only the heart + number change color by zone · fixed 70px width, centered tabular number → never shifts</p>
+
+  <div class="mbrow">
+    <div class="menubar">
+      <span class="spacer">other menu items</span>
+      <span class="hb"><span class="glyph" style="color:var(--orange)">♥</span><span class="num" style="color:var(--orange)">94</span></span>
+      <span class="clock">9:41 AM</span>
+    </div>
+    <div class="states">
+      <span class="cap">resting / elevated / high:</span>
+      <span class="hb"><span class="glyph" style="color:var(--green)">♥</span><span class="num" style="color:var(--green)">58</span></span>
+      <span class="hb"><span class="glyph" style="color:var(--orange)">♥</span><span class="num" style="color:var(--orange)">94</span></span>
+      <span class="hb"><span class="glyph" style="color:var(--red)">♥</span><span class="num" style="color:var(--red)">142</span></span>
+    </div>
+    <div class="states">
+      <span class="cap">2-digit vs 3-digit:</span>
+      <span class="hb"><span class="glyph" style="color:var(--orange)">♥</span><span class="num" style="color:var(--orange)">72</span></span>
+      <span class="hb"><span class="glyph" style="color:var(--red)">♥</span><span class="num" style="color:var(--red)">142</span></span>
+    </div>
+    <p class="note">Matches your reference: coral heart + number on a dark pill. Pill stays put; only the content recolors with your zone. (Stale = content dims to gray; idle = a faint gray heart with no number.)</p>
+  </div>
+
+  <footer>HTML mockup · approximate colors &amp; spacing · real build is native SwiftUI (animated ring, pulsing heart, system materials). The dark-pill menu-bar item is drawn as a custom NSImage (template = false) so the coral/green/red content color is preserved.</footer>
+</body>
+</html>

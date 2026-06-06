@@ -7,172 +7,73 @@ struct MenuContentView: View {
     @State private var breathing = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        Group {
             if breathing {
                 BreathingView(store: store) { breathing = false }
             } else {
-                hrRow
-                Sparkline(values: store.recent)
-                    .frame(height: 38)
-                batteryRow
-                statsRow
-                zoneBar
-                Divider()
-                footer
+                main
             }
         }
-        .padding(12)
-        .frame(width: 264)
+        .padding(Theme.lg)
+        .frame(width: 300)
+        .background(.black.opacity(0.001))   // ensures the hosting view fills the popover
     }
 
-    private var hrRow: some View {
-        HStack(spacing: 6) {
-            Image(systemName: "heart.fill").foregroundStyle(.red)
-            Text(store.liveHR.map { "\($0) bpm" } ?? "—")
-                .font(.title3).bold()
-                .opacity(store.hrStatus == .stale ? 0.5 : 1)
-            if let p = store.percentMax {
-                Text("\(p)%").font(.caption).foregroundStyle(.secondary)
+    private var main: some View {
+        VStack(spacing: Theme.md) {
+            HeartRateRing(
+                bpm: store.liveHR,
+                fraction: Double(store.percentMax ?? 0) / 100,
+                percentMax: store.percentMax,
+                zone: store.hrZone,
+                trend: store.hrTrend,
+                status: store.hrStatus
+            )
+            StatusBadge(status: store.hrStatus)
+
+            card(title: "Last 2 min") {
+                HRSparkline(values: store.recent).frame(height: 46)
             }
-            if let t = store.hrTrend { trendIcon(t) }
-            Spacer()
-            badge
-        }
-    }
 
-    @ViewBuilder private func trendIcon(_ t: HealthStore.Trend) -> some View {
-        switch t {
-        case .rising:  Image(systemName: "arrow.up.right").foregroundStyle(.orange)
-        case .falling: Image(systemName: "arrow.down.right").foregroundStyle(.blue)
-        case .steady:  Image(systemName: "arrow.right").foregroundStyle(.secondary)
-        }
-    }
+            HStack(spacing: Theme.sm) {
+                StatCard(label: "min", value: store.sessionMin, tint: Theme.resting)
+                StatCard(label: "avg", value: store.sessionAvg)
+                StatCard(label: "max", value: store.sessionMax, tint: Theme.high)
+            }
 
-    @ViewBuilder private var badge: some View {
-        switch store.hrStatus {
-        case .live:
-            Label("live", systemImage: "circle.fill").foregroundStyle(.green).font(.caption)
-        case .stale:
-            Label("reconnecting", systemImage: "circle.fill").foregroundStyle(.secondary).font(.caption)
-        case .idle:
-            Text("enable Heart Rate Push").font(.caption).foregroundStyle(.secondary)
-        case .error(let m):
-            Text(m).font(.caption).foregroundStyle(.orange)
-        }
-    }
+            card(title: "Time in zone") {
+                ZoneBar(
+                    fractions: [
+                        (.resting,  store.zoneFraction(.resting)),
+                        (.elevated, store.zoneFraction(.elevated)),
+                        (.high,     store.zoneFraction(.high)),
+                    ],
+                    isEmpty: store.zoneCounts.isEmpty
+                )
+            }
 
-    private var batteryRow: some View {
-        HStack(spacing: 6) {
-            Image(systemName: batterySymbol)
-                .foregroundStyle(batteryColor)
-            Text(batteryText)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            Spacer()
-        }
-    }
+            BatteryPill(percent: store.batteryPercent, estimate: store.batteryEstimate)
 
-    private var batteryText: String {
-        guard let percent = store.batteryPercent else { return "strap battery —" }
-        switch store.batteryEstimate {
-        case .calibrating:
-            return "strap battery \(percent)% · calibrating"
-        case .ready(let remaining):
-            return "strap battery \(percent)% · ~\(formatRemaining(remaining)) left"
-        }
-    }
-
-    private func formatRemaining(_ remaining: TimeInterval) -> String {
-        let hours = Swift.max(0, Int((remaining / 3600).rounded()))
-        if hours >= 48 { return "\(Int((Double(hours) / 24).rounded()))d" }
-        if hours >= 1 { return "\(hours)h" }
-        return "<1h"
-    }
-
-    private var batterySymbol: String {
-        guard let percent = store.batteryPercent else { return "battery.0percent" }
-        switch percent {
-        case ..<20: return "battery.25percent"
-        case ..<60: return "battery.50percent"
-        case ..<85: return "battery.75percent"
-        default: return "battery.100percent"
-        }
-    }
-
-    private var batteryColor: Color {
-        guard let percent = store.batteryPercent else { return .secondary }
-        return percent < 20 ? .orange : .secondary
-    }
-
-    private var statsRow: some View {
-        HStack(spacing: 14) {
-            stat("min", store.sessionMin)
-            stat("avg", store.sessionAvg)
-            stat("max", store.sessionMax)
-            Spacer()
-        }
-    }
-
-    private func stat(_ label: String, _ value: Int?) -> some View {
-        VStack(alignment: .leading, spacing: 1) {
-            Text(label).font(.caption2).foregroundStyle(.secondary)
-            Text(value.map(String.init) ?? "—").font(.callout).monospacedDigit()
-        }
-    }
-
-    private var zoneBar: some View {
-        GeometryReader { geo in
-            HStack(spacing: 1) {
-                ForEach([HRZone.resting, .elevated, .high], id: \.self) { z in
-                    Rectangle()
-                        .fill(zoneColor(z))
-                        .frame(width: max(0, geo.size.width * store.zoneFraction(z)))
-                }
+            HStack(spacing: Theme.sm) {
+                IconButton(systemName: "wind", help: "Breathe", tint: .blue) { breathing = true }
+                IconButton(systemName: "arrow.counterclockwise", help: "Reset session") { store.resetSession() }
+                IconButton(systemName: "gearshape", help: "Settings", action: onSettings)
+                IconButton(systemName: "power", help: "Quit") { NSApplication.shared.terminate(nil) }
             }
         }
-        .frame(height: 6)
-        .clipShape(Capsule())
-        .opacity(store.zoneCounts.isEmpty ? 0.15 : 1)
     }
 
-    private func zoneColor(_ z: HRZone) -> Color {
-        switch z { case .resting: return .green; case .elevated: return .orange; case .high: return .red }
-    }
-
-    private var footer: some View {
-        HStack(spacing: 8) {
-            Button("Reset") { store.resetSession() }
-            Button("Breathe") { breathing = true }
-            Spacer()
-            Button("Settings", action: onSettings)
-            Button("Quit") { NSApplication.shared.terminate(nil) }
+    @ViewBuilder
+    private func card<Content: View>(title: String, @ViewBuilder _ content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 7) {
+            Text(title.uppercased())
+                .font(Theme.cardTitleFont).foregroundStyle(.tertiary)
+            content()
         }
-        .controlSize(.small)
-    }
-}
-
-/// Tiny line chart of recent HR values.
-private struct Sparkline: View {
-    let values: [Int]
-    var body: some View {
-        GeometryReader { geo in
-            if values.count >= 2 {
-                let lo = Double(values.min()!), hi = Double(values.max()!)
-                let range = Swift.max(hi - lo, 1)
-                Path { p in
-                    for (i, v) in values.enumerated() {
-                        let x = geo.size.width * Double(i) / Double(values.count - 1)
-                        let y = geo.size.height * (1 - (Double(v) - lo) / range)
-                        if i == 0 { p.move(to: CGPoint(x: x, y: y)) }
-                        else { p.addLine(to: CGPoint(x: x, y: y)) }
-                    }
-                }
-                .stroke(.red, style: StrokeStyle(lineWidth: 1.5, lineJoin: .round))
-            } else {
-                Text("collecting…").font(.caption2).foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-            }
-        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 13)
+        .padding(.vertical, 11)
+        .cardSurface()
     }
 }
 
@@ -180,10 +81,10 @@ private struct Sparkline: View {
 #Preview("live") {
     let s = HealthStore()
     [62,65,70,68,72,80,95,110,90,75,72,71].forEach { s.updateHR($0) }
-    return MenuContentView(store: s, onSettings: {})
+    return MenuContentView(store: s, onSettings: {}).background(.black)
 }
 
 #Preview("idle") {
-    MenuContentView(store: HealthStore(), onSettings: {})
+    MenuContentView(store: HealthStore(), onSettings: {}).background(.black)
 }
 #endif
