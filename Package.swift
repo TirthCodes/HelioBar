@@ -21,6 +21,7 @@ let package = Package(
                 "HelioBarApp.swift",
                 "AppModel.swift",
                 "HeartRateMonitor.swift",
+                "MenuBarIcon.swift",
                 "Views",
             ]
         ),
