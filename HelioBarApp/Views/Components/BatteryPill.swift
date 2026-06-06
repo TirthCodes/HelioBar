@@ -39,7 +39,7 @@ struct BatteryPill: View {
     }
 
     static func formatRemaining(_ remaining: TimeInterval) -> String {
-        let hours = Swift.max(0, Int((remaining / 3600).rounded()))
+        let hours = Swift.max(0, Int(floor(remaining / 3600)))
         if hours >= 48 { return "\(Int((Double(hours) / 24).rounded()))d" }
         if hours >= 1  { return "\(hours)h" }
         return "<1h"
