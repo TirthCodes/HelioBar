@@ -54,6 +54,11 @@ final class UpdateChecker {
 
     private func performCheck() async {
         status = .checking
+        // Stamp the check time up front so a flapping network doesn't re-fire the
+        // auto-check on every launch within the 24h window (even on failure).
+        let now = Date()
+        lastChecked = now
+        defaults.set(now.timeIntervalSince1970, forKey: lastCheckKey)
         do {
             var request = URLRequest(url: apiURL)
             request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
@@ -62,10 +67,6 @@ final class UpdateChecker {
                 status = .failed; return
             }
             let release = try JSONDecoder().decode(LatestRelease.self, from: data)
-            let now = Date()
-            lastChecked = now
-            defaults.set(now.timeIntervalSince1970, forKey: lastCheckKey)
-
             let dismissed = defaults.string(forKey: dismissedKey)
             if isVersion(release.version, newerThan: currentVersion), release.version != dismissed {
                 available = release
