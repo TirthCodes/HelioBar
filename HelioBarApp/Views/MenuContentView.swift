@@ -3,6 +3,7 @@ import HelioCore
 
 struct MenuContentView: View {
     let store: HealthStore
+    let updater: UpdateChecker
     var onSettings: () -> Void
     @State private var breathing = false
 
@@ -21,6 +22,13 @@ struct MenuContentView: View {
 
     private var main: some View {
         VStack(spacing: Theme.md) {
+            if let release = updater.available {
+                UpdateBanner(
+                    release: release,
+                    onDownload: { updater.openDownload() },
+                    onDismiss: { updater.dismiss(release) }
+                )
+            }
             HeartRateRing(
                 bpm: store.liveHR,
                 fraction: Double(store.percentMax ?? 0) / 100,
@@ -81,10 +89,10 @@ struct MenuContentView: View {
 #Preview("live") {
     let s = HealthStore()
     [62,65,70,68,72,80,95,110,90,75,72,71].forEach { s.updateHR($0) }
-    return MenuContentView(store: s, onSettings: {}).background(.black)
+    return MenuContentView(store: s, updater: UpdateChecker(), onSettings: {}).background(.black)
 }
 
 #Preview("idle") {
-    MenuContentView(store: HealthStore(), onSettings: {}).background(.black)
+    MenuContentView(store: HealthStore(), updater: UpdateChecker(), onSettings: {}).background(.black)
 }
 #endif
