@@ -6,6 +6,7 @@ let package = Package(
     platforms: [.macOS(.v14)],
     products: [
         .executable(name: "HelioBar", targets: ["HelioBar"]),
+        .executable(name: "HelioBLEInspector", targets: ["HelioBLEInspector"]),
     ],
     dependencies: [
         .package(path: "HelioCore"),
@@ -22,6 +23,10 @@ let package = Package(
                 "HeartRateMonitor.swift",
                 "Views",
             ]
+        ),
+        .executableTarget(
+            name: "HelioBLEInspector",
+            path: "Tools/HelioBLEInspector"
         ),
     ]
 )

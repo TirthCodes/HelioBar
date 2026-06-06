@@ -6,6 +6,8 @@ struct SettingsView: View {
     @AppStorage("alertEnabled") private var alertEnabled = false
     @AppStorage("alertThreshold") private var alertThreshold = 100
     @AppStorage("alertDurationMin") private var alertDurationMin = 3
+    @AppStorage("batteryAlertEnabled") private var batteryAlertEnabled = true
+    @AppStorage("batteryAlertThreshold") private var batteryAlertThreshold = 20
     @State private var launchAtLogin = (SMAppService.mainApp.status == .enabled)
     @State private var launchAtLoginError: String?
 
@@ -20,6 +22,10 @@ struct SettingsView: View {
                 Toggle("Notify when HR stays high", isOn: $alertEnabled)
                 Stepper("Above \(alertThreshold) bpm", value: $alertThreshold, in: 80...200, step: 5)
                 Stepper("For \(alertDurationMin) min", value: $alertDurationMin, in: 1...30)
+            }
+            Section("Strap battery alert") {
+                Toggle("Notify when strap battery is low", isOn: $batteryAlertEnabled)
+                Stepper("At or below \(batteryAlertThreshold)%", value: $batteryAlertThreshold, in: 5...50, step: 5)
             }
             Section {
                 Toggle("Launch at login", isOn: $launchAtLogin)

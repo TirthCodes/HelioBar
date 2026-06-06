@@ -14,6 +14,7 @@ struct MenuContentView: View {
                 hrRow
                 Sparkline(values: store.recent)
                     .frame(height: 38)
+                batteryRow
                 statsRow
                 zoneBar
                 Divider()
@@ -58,6 +59,49 @@ struct MenuContentView: View {
         case .error(let m):
             Text(m).font(.caption).foregroundStyle(.orange)
         }
+    }
+
+    private var batteryRow: some View {
+        HStack(spacing: 6) {
+            Image(systemName: batterySymbol)
+                .foregroundStyle(batteryColor)
+            Text(batteryText)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Spacer()
+        }
+    }
+
+    private var batteryText: String {
+        guard let percent = store.batteryPercent else { return "strap battery —" }
+        switch store.batteryEstimate {
+        case .calibrating:
+            return "strap battery \(percent)% · calibrating"
+        case .ready(let remaining):
+            return "strap battery \(percent)% · ~\(formatRemaining(remaining)) left"
+        }
+    }
+
+    private func formatRemaining(_ remaining: TimeInterval) -> String {
+        let hours = Swift.max(0, Int((remaining / 3600).rounded()))
+        if hours >= 48 { return "\(Int((Double(hours) / 24).rounded()))d" }
+        if hours >= 1 { return "\(hours)h" }
+        return "<1h"
+    }
+
+    private var batterySymbol: String {
+        guard let percent = store.batteryPercent else { return "battery.0percent" }
+        switch percent {
+        case ..<20: return "battery.25percent"
+        case ..<60: return "battery.50percent"
+        case ..<85: return "battery.75percent"
+        default: return "battery.100percent"
+        }
+    }
+
+    private var batteryColor: Color {
+        guard let percent = store.batteryPercent else { return .secondary }
+        return percent < 20 ? .orange : .secondary
     }
 
     private var statsRow: some View {
