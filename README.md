@@ -26,14 +26,13 @@ The rest of this README is for developers who want to build it themselves.
 ### What's new in 2.0
 - Redesigned, calm Apple-Fitness interface built around an animated heart-rate ring
 - Strap battery tracking, low-battery alerts, and a calibrated time-remaining estimate
-- Built-in update check (see below)
 - Requires **macOS 26+**
 
 See the [v2.0.0 release](https://github.com/TirthCodes/HelioBar/releases/latest) for the full changelog.
 
-> **Network note:** From v2.0, HelioBar makes a single call to `api.github.com` to check for a
-> newer release. No telemetry, no account, nothing else leaves your Mac — turn it off in
-> **Settings → Updates**.
+> **Network note:** Starting with v2.1, HelioBar adds an optional update check that makes a
+> single call to `api.github.com` for the latest release number. No telemetry, no account,
+> nothing else leaves your Mac — turn it off in **Settings → Updates**. (Not in v2.0.)
 
 ## Features
 
