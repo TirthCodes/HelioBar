@@ -34,7 +34,7 @@ The rest of this README is for developers who want to build it themselves.
 
 ## Requirements
 
-- macOS 14+
+- macOS 26+
 - Apple Command Line Tools (`xcode-select -p` should point at Command Line Tools) or full Xcode
 - An Amazfit Helio Strap (or any device that broadcasts the standard BLE Heart Rate service `0x180D`)
 
