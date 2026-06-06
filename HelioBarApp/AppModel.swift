@@ -7,6 +7,7 @@ import HelioCore
 @Observable
 final class AppModel {
     let store = HealthStore()
+    let updateChecker = UpdateChecker()
     private var monitor: HeartRateMonitor?
     private let alertEngine = ElevatedHRAlertEngine()
     private let batteryAlertEngine = BatteryAlertEngine()
@@ -29,6 +30,7 @@ final class AppModel {
             onUnavailable: { [weak self] message in
                 Task { @MainActor in self?.store.hrFailed(message) }
             })
+        Task { await updateChecker.checkIfDue() }
     }
 
     private func handle(bpm: Int) {
