@@ -10,6 +10,9 @@ struct SettingsView: View {
     @AppStorage("batteryAlertThreshold") private var batteryAlertThreshold = 20
     @AppStorage("autoUpdateCheck") private var autoUpdateCheck = true
     let updater: UpdateChecker
+    @AppStorage("activityTrackingEnabled") private var activityTrackingEnabled = false
+    @State private var storageSizeText = "Calculating..."
+    @State private var showDeleteConfirmation = false
     @State private var launchAtLogin = (SMAppService.mainApp.status == .enabled)
     @State private var launchAtLoginError: String?
 
@@ -54,6 +57,41 @@ struct SettingsView: View {
             } header: {
                 Label("System", systemImage: "power")
             }
+            Section {
+                Toggle("Track app activity", isOn: $activityTrackingEnabled)
+                Text("Records which app is active alongside your heart rate")
+                    .font(.caption).foregroundStyle(.secondary)
+
+                if activityTrackingEnabled {
+                    HStack {
+                        Text("Data stored")
+                        Spacer()
+                        Text(storageSizeText)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Button("View Insights") {
+                        NotificationCenter.default.post(name: .openInsightsWindow, object: nil)
+                    }
+
+                    Button("Export All Data...") {
+                        NotificationCenter.default.post(name: .exportActivityData, object: nil)
+                    }
+
+                    Button("Delete All Data...", role: .destructive) {
+                        showDeleteConfirmation = true
+                    }
+                    .confirmationDialog("Delete all activity data?", isPresented: $showDeleteConfirmation) {
+                        Button("Delete", role: .destructive) {
+                            NotificationCenter.default.post(name: .deleteActivityData, object: nil)
+                        }
+                    } message: {
+                        Text("This cannot be undone.")
+                    }
+                }
+            } header: {
+                Label("Activity Tracking", systemImage: "chart.bar.fill")
+            }
         }
         .formStyle(.grouped)
         .frame(width: 330, height: 400)
@@ -85,4 +123,11 @@ struct SettingsView: View {
             launchAtLoginError = error.localizedDescription
         }
     }
+}
+
+extension Notification.Name {
+    static let openInsightsWindow = Notification.Name("openInsightsWindow")
+    static let exportActivityData = Notification.Name("exportActivityData")
+    static let deleteActivityData = Notification.Name("deleteActivityData")
+    static let startBreathing = Notification.Name("startBreathing")
 }

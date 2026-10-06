@@ -1,7 +1,7 @@
 import Foundation
 
 /// Heart-rate zone for menu bar tinting.
-public enum HRZone: String, Sendable {
+public enum HRZone: String, Codable, Sendable {
     case resting, elevated, high
 
     /// Zone by fraction of max HR: <60% resting, 60–80% elevated, ≥80% high.

@@ -6,7 +6,7 @@ import HelioCore
 enum MenuBarIcon {
     private static let size = NSSize(width: 66, height: 22)
 
-    static func image(bpm: Int?, zone: HRZone?, status: SourceStatus) -> NSImage {
+    static func image(bpm: Int?, zone: HRZone?, status: SourceStatus, isTracking: Bool = false) -> NSImage {
         let contentColor: NSColor
         switch status {
         case .stale:                 contentColor = .secondaryLabelColor
@@ -51,6 +51,14 @@ enum MenuBarIcon {
             ]
             let numberSlot = NSRect(x: 24, y: (rect.height - 17) / 2 - 1, width: 36, height: 18)
             (text as NSString).draw(in: numberSlot, withAttributes: attrs)
+
+            // Stress indicator dot — shown when tracking and zone is elevated or high
+            if isTracking, let z = zone, z != .resting {
+                let dotColor: NSColor = z == .high ? .systemRed : .systemOrange
+                dotColor.setFill()
+                let dotRect = NSRect(x: rect.width - 10, y: rect.height - 10, width: 6, height: 6)
+                NSBezierPath(ovalIn: dotRect).fill()
+            }
             return true
         }
         image.isTemplate = false
